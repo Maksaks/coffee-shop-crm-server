@@ -11,6 +11,7 @@ import { StatisticsModule } from './statistics/statistics.module';
 import { IngredientsService } from './ingredients/ingredients.service';
 import { OrdersService } from './orders/orders.service';
 import { PointsService } from './points/points.service';
+import { ShiftsService } from './shifts/shifts.service';
 
 @Module({
   imports: [BaristaModule, AdminModule, AuthModule, StatisticsModule],
@@ -23,6 +24,7 @@ import { PointsService } from './points/points.service';
     IngredientsService,
     OrdersService,
     PointsService,
+    ShiftsService,
   ],
 })
 export class AppModule {}
