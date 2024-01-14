@@ -1,10 +1,12 @@
 import { IsEmail, Min } from 'class-validator';
 import { Order } from 'src/orders/entities/orders.entity';
 import { Point } from 'src/points/entities/points.entity';
+import { Shift } from 'src/shifts/entities/shift.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -32,10 +34,12 @@ export class Barista {
   percentFromEarnings: number;
   @CreateDateColumn()
   dateOfEmployment: Date;
-  @ManyToMany()
-  point: Point[];
-  @OneToMany()
+  @ManyToMany(() => Point, (point) => point.barista, { onDelete: 'SET NULL' })
+  points: Point[];
+  @OneToMany(() => Shift, (shift) => shift.barista, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'shifts_id' })
   shifts: Shift[];
-  @OneToMany()
+  @OneToMany(() => Order, (order) => order.barista, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'orders_id' })
   orders: Order[];
 }

@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -17,6 +18,9 @@ export class PositionDiscount {
   startedAt: Date;
   @Column({ type: 'timestamptz' })
   endAt: Date;
-  @OneToOne()
+  @OneToOne(() => MenuPosition, (position) => position.discount, {
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'position_id' })
   menuPosition: MenuPosition;
 }

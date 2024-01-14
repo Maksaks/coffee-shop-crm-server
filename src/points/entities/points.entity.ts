@@ -3,6 +3,7 @@ import { Order } from 'src/orders/entities/orders.entity';
 import {
   Column,
   Entity,
+  JoinColumn,
   ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -20,8 +21,11 @@ export class Point {
   description: string;
   @Column()
   workingHours: string;
-  @ManyToMany()
+  @ManyToMany(() => Barista, (barista) => barista.points, {
+    onDelete: 'SET NULL',
+  })
   barista: Barista[];
-  @OneToMany()
+  @OneToMany(() => Order, (order) => order.point, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'orders_id' })
   orders: Order[];
 }

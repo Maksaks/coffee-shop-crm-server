@@ -3,6 +3,7 @@ import { MenuPosition } from 'src/menu-position/entities/menu-position.entity';
 import {
   Column,
   Entity,
+  JoinColumn,
   ManyToMany,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -14,8 +15,13 @@ export class Recipe {
   id: number;
   @Column('text', { array: true })
   stepsToReproduce: string[];
-  @OneToOne()
+  @OneToOne(() => MenuPosition, (position) => position.recipe, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'position_id' })
   menuPosition: MenuPosition;
-  @ManyToMany()
+  @ManyToMany(() => Ingredient, (ingredient) => ingredient.recipes, {
+    onDelete: 'SET NULL',
+  })
   ingredients: Ingredient[];
 }

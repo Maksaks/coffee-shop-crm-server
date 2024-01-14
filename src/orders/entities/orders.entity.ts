@@ -5,12 +5,13 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-enum OrderStatus {
+export enum OrderStatus {
   InProgress = 'In Progress',
   Ready = 'Ready',
 }
@@ -25,10 +26,18 @@ export class Order {
   status: OrderStatus;
   @Column()
   totalAmount: number;
-  @ManyToOne()
+  @ManyToOne(() => Barista, (barista) => barista.orders, {
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'barista_id' })
   barista: Barista;
-  @ManyToOne()
+  @ManyToOne(() => Point, (point) => point.orders, {
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'point_id' })
   point: Point;
-  @ManyToMany()
+  @ManyToMany(() => MenuPosition, (position) => position.orders, {
+    onDelete: 'SET NULL',
+  })
   menuPositions: MenuPosition[];
 }

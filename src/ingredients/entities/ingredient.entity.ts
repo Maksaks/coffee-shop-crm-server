@@ -13,6 +13,8 @@ export class Ingredient {
   quantity: number;
   @Column()
   price: number;
-  @ManyToMany()
+  @ManyToMany(() => Recipe, (recipe) => recipe.ingredients, {
+    onDelete: 'SET NULL',
+  })
   recipes: Recipe[];
 }
