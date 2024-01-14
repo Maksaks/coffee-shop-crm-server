@@ -1,9 +1,16 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateBaristaDto } from './dto/create-barista.dto';
 import { UpdateBaristaDto } from './dto/update-barista.dto';
+import { Barista } from './entities/barista.entity';
 
 @Injectable()
 export class BaristaService {
+  constructor(
+    @InjectRepository(Barista)
+    private readonly baristaRepository: Repository<Barista>,
+  ) {}
   create(createBaristaDto: CreateBaristaDto) {
     return 'This action adds a new barista';
   }
