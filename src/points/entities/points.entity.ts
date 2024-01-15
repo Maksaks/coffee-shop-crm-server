@@ -1,4 +1,5 @@
 import { Barista } from 'src/barista/entities/barista.entity';
+import { Ingredient } from 'src/ingredients/entities/ingredient.entity';
 import { Order } from 'src/orders/entities/orders.entity';
 import {
   Column,
@@ -28,4 +29,9 @@ export class Point {
   @OneToMany(() => Order, (order) => order.point, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'orders_id' })
   orders: Order[];
+  @OneToMany(() => Ingredient, (ingredient) => ingredient.point, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'ingredients_id' })
+  ingredients: Ingredient[];
 }

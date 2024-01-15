@@ -1,6 +1,13 @@
 import { Min } from 'class-validator';
+import { Point } from 'src/points/entities/points.entity';
 import { Recipe } from 'src/recipe/entities/recipe.entity';
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Ingredient {
@@ -17,4 +24,8 @@ export class Ingredient {
     onDelete: 'SET NULL',
   })
   recipes: Recipe[];
+  @ManyToOne(() => Point, (point) => point.ingredients, {
+    onDelete: 'SET NULL',
+  })
+  point: Point;
 }
