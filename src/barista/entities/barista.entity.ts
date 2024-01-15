@@ -34,7 +34,10 @@ export class Barista {
   percentFromEarnings: number;
   @CreateDateColumn()
   dateOfEmployment: Date;
-  @ManyToMany(() => Point, (point) => point.barista, { onDelete: 'SET NULL' })
+  @ManyToMany(() => Point, (point) => point.barista, {
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+  })
   points: Point[];
   @OneToMany(() => Shift, (shift) => shift.barista, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'shifts_id' })

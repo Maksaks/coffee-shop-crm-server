@@ -12,4 +12,6 @@ export class Admin {
   @Column()
   @IsEmail()
   email: string;
+  @Column()
+  password: string;
 }

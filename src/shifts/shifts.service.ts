@@ -44,4 +44,18 @@ export class ShiftsService {
         );
     }
   }
+  async getAllShiftsForBarista(id: number) {
+    const shifts = await this.shiftRepository.find({
+      where: { barista: { id } },
+      relations: {
+        barista: true,
+      },
+    });
+    if (shifts.length) {
+      return new BadRequestException(
+        `Shifts for Barista with #${id} weren\`t found`,
+      );
+    }
+    return shifts;
+  }
 }
