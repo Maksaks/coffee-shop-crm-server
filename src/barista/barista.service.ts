@@ -36,7 +36,7 @@ export class BaristaService {
     const exsitedBarista = await this.baristaRepository.findOne({
       where: { id: id },
     });
-    if (exsitedBarista)
+    if (!exsitedBarista)
       return new BadRequestException(`No Barista with #${id}`);
     return await this.baristaRepository.find({
       where: { id },
@@ -48,7 +48,7 @@ export class BaristaService {
     const exsitedBarista = await this.baristaRepository.findOne({
       where: { id: id },
     });
-    if (exsitedBarista)
+    if (!exsitedBarista)
       return new BadRequestException(`No Barista with #${id}`);
     return await this.baristaRepository.update(id, updateBaristaDto);
   }
@@ -57,7 +57,7 @@ export class BaristaService {
     const exsitedBarista = await this.baristaRepository.findOne({
       where: { id: id },
     });
-    if (exsitedBarista)
+    if (!exsitedBarista)
       return new BadRequestException(`No Barista with #${id}`);
     return await this.baristaRepository.delete(id);
   }

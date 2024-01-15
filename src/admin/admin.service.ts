@@ -15,7 +15,7 @@ export class AdminService {
     const existedAdmin = await this.adminRepository.find({
       where: { email: createAdminDto.email },
     });
-    if (!existedAdmin) {
+    if (existedAdmin) {
       return new BadRequestException(
         `Admin with email ${createAdminDto.email} has already existed`,
       );

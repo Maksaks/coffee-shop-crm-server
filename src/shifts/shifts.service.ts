@@ -19,7 +19,7 @@ export class ShiftsService {
         order: { id: 'DESC' },
         take: 1,
       });
-      if (lastShift[0].status === ShiftStatus.EndOfWork) {
+      if (!lastShift[0] || lastShift[0].status === ShiftStatus.EndOfWork) {
         return await this.shiftRepository.save({
           status: ShiftStatus.StartOfWork,
           barista: { id },
@@ -33,6 +33,10 @@ export class ShiftsService {
         order: { id: 'DESC' },
         take: 1,
       });
+      if (lastShift.length)
+        return new BadRequestException(
+          'You can`t end of shift until you start it',
+        );
       if (lastShift[0].status === ShiftStatus.StartOfWork) {
         return await this.shiftRepository.save({
           status: ShiftStatus.EndOfWork,
