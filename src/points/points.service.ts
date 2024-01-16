@@ -40,7 +40,12 @@ export class PointsService {
   async findAll(adminID: number) {
     return await this.pointRepository.find({
       where: { admin: { id: adminID } },
-      relations: { barista: true, ingredients: true, orders: true },
+      relations: {
+        barista: true,
+        ingredients: true,
+        orders: true,
+        shifts: true,
+      },
     });
   }
 
@@ -53,7 +58,12 @@ export class PointsService {
     }
     return await this.pointRepository.findOne({
       where: { id },
-      relations: { barista: true, ingredients: true, orders: true },
+      relations: {
+        barista: true,
+        ingredients: true,
+        orders: true,
+        shifts: true,
+      },
     });
   }
   async update(id: number, updatePointDto: UpdatePointDto, adminID: number) {

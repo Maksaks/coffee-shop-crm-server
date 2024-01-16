@@ -31,7 +31,7 @@ export class Barista {
   @Min(8)
   password: string;
   @Column()
-  fixedRate: number;
+  fixedHourRate: number;
   @Column()
   percentFromEarnings: number;
   @CreateDateColumn()

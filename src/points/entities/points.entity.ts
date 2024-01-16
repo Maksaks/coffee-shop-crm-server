@@ -2,6 +2,7 @@ import { Admin } from 'src/admin/entities/admin.entity';
 import { Barista } from 'src/barista/entities/barista.entity';
 import { Ingredient } from 'src/ingredients/entities/ingredient.entity';
 import { Order } from 'src/orders/entities/orders.entity';
+import { Shift } from 'src/shifts/entities/shift.entity';
 import {
   Column,
   Entity,
@@ -38,4 +39,6 @@ export class Point {
   ingredients: Ingredient[];
   @ManyToOne(() => Admin, (admin) => admin.points, { onDelete: 'SET NULL' })
   admin: Admin;
+  @OneToMany(() => Shift, (shift) => shift.point, { onDelete: 'SET NULL' })
+  shifts: Shift[];
 }

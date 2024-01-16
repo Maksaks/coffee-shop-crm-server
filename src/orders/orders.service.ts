@@ -2,7 +2,6 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DatesEnum } from 'src/enums/DatesEnum.enum';
 import {
-  getDayBefore,
   getMonthBefore,
   getTodayMidnight,
   getWeekBefore,
@@ -57,16 +56,17 @@ export class OrdersService {
         await this.orderRepository.find({
           where: {
             barista: { id: baristaID },
-            createdAt: Between(getDayBefore(), new Date()),
+            createdAt: Between(getTodayMidnight(), new Date()),
           },
           relations: {
             menuPositions: true,
             point: true,
+            barista: true,
           },
         });
       if (existedOrdersForBaristaForCurrentDay.length) {
         return new BadRequestException(
-          `Orders for barista #${baristaID} during last day were not found`,
+          `Orders for barista #${baristaID} during today were not found`,
         );
       }
       return existedOrdersForBaristaForCurrentDay;

@@ -1,4 +1,5 @@
 import { Barista } from 'src/barista/entities/barista.entity';
+import { Point } from 'src/points/entities/points.entity';
 import {
   Column,
   CreateDateColumn,
@@ -24,4 +25,8 @@ export class Shift {
   @ManyToOne(() => Barista, (barista) => barista.shifts)
   @JoinColumn({ name: 'barista_id' })
   barista: Barista;
+  @Column()
+  baristaSalary: number;
+  @ManyToOne(() => Point, (point) => point.shifts, { onDelete: 'SET NULL' })
+  point: Point;
 }
