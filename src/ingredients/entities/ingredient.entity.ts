@@ -4,6 +4,7 @@ import { Recipe } from 'src/recipe/entities/recipe.entity';
 import {
   Column,
   Entity,
+  JoinTable,
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -23,6 +24,7 @@ export class Ingredient {
   @ManyToMany(() => Recipe, (recipe) => recipe.ingredients, {
     onDelete: 'SET NULL',
   })
+  @JoinTable()
   recipes: Recipe[];
   @ManyToOne(() => Point, (point) => point.ingredients, {
     onDelete: 'SET NULL',

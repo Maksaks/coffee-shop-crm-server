@@ -98,6 +98,20 @@ export class ShiftsService {
     return shifts;
   }
 
+  async getAllShifts(adminID: number) {
+    const shifts = await this.shiftRepository.find({
+      where: { point: { admin: { id: adminID } } },
+      relations: {
+        barista: true,
+        point: true,
+      },
+    });
+    if (shifts.length) {
+      return new BadRequestException(`Shifts were not found`);
+    }
+    return shifts;
+  }
+
   async getCurrentStatus(baristaID: number) {
     const lastShift = await this.shiftRepository.find({
       where: {

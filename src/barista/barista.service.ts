@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as argon2 from 'argon2';
 import { Point } from 'src/points/entities/points.entity';
 import { Repository } from 'typeorm';
 import { CreateBaristaDto } from './dto/create-barista.dto';
@@ -26,6 +27,7 @@ export class BaristaService {
       );
     const newBarista = {
       ...createBaristaDto,
+      password: await argon2.hash(createBaristaDto.password),
     };
     return await this.baristaRepository.save(newBarista);
   }
@@ -36,16 +38,20 @@ export class BaristaService {
     });
   }
 
-  async findOne(id: number, adminID: number) {
+  async findOne(id: number) {
     const exsitedBarista = await this.baristaRepository.findOne({
-      where: { id: id, admin: { id: adminID } },
+      where: { id },
     });
     if (!exsitedBarista)
       return new BadRequestException(`No Barista with #${id}`);
-    return await this.baristaRepository.find({
+    return await this.baristaRepository.findOne({
       where: { id },
       relations: { points: true, shifts: true, orders: true },
     });
+  }
+
+  async findOneByEmail(email: string) {
+    return await this.baristaRepository.findOne({ where: { email } });
   }
 
   async update(

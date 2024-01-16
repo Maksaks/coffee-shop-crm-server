@@ -7,7 +7,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
+  JoinTable,
   ManyToMany,
   ManyToOne,
   OneToMany,
@@ -40,12 +40,11 @@ export class Barista {
     onDelete: 'SET NULL',
     onUpdate: 'CASCADE',
   })
+  @JoinTable()
   points: Point[];
   @OneToMany(() => Shift, (shift) => shift.barista, { onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'shifts_id' })
   shifts: Shift[];
   @OneToMany(() => Order, (order) => order.barista, { onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'orders_id' })
   orders: Order[];
   @ManyToOne(() => Admin, (admin) => admin.baristas, { onDelete: 'SET NULL' })
   admin: Admin;

@@ -9,5 +9,6 @@ import { Barista } from './entities/barista.entity';
   imports: [TypeOrmModule.forFeature([Barista, Point])],
   controllers: [BaristaController],
   providers: [BaristaService],
+  exports: [BaristaService],
 })
 export class BaristaModule {}

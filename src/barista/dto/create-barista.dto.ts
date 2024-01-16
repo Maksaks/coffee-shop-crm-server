@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsOptional, Min } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, MinLength } from 'class-validator';
 import { Admin } from 'src/admin/entities/admin.entity';
 import { Point } from 'src/points/entities/points.entity';
 
@@ -11,10 +11,10 @@ export class CreateBaristaDto {
   email: string;
   @IsNotEmpty()
   phoneNumber: string;
-  @Min(8)
+  @MinLength(8)
   password: string;
   @IsNotEmpty()
-  fixedRate: number;
+  fixedHourRate: number;
   @IsNotEmpty()
   percentFromEarnings: number;
   @IsOptional()

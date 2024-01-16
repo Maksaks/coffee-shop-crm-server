@@ -6,6 +6,7 @@ import {
   Column,
   Entity,
   JoinColumn,
+  JoinTable,
   ManyToMany,
   ManyToOne,
   OneToOne,
@@ -30,6 +31,7 @@ export class MenuPosition {
   @ManyToMany(() => Order, (order) => order.menuPositions, {
     onDelete: 'SET NULL',
   })
+  @JoinTable()
   orders: Order[];
   @OneToOne(() => PositionDiscount, (discount) => discount.menuPosition, {
     onDelete: 'CASCADE',

@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as argon2 from 'argon2';
 import { Repository } from 'typeorm';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
@@ -12,7 +13,7 @@ export class AdminService {
     private readonly adminRepository: Repository<Admin>,
   ) {}
   async create(createAdminDto: CreateAdminDto) {
-    const existedAdmin = await this.adminRepository.find({
+    const existedAdmin = await this.adminRepository.findOne({
       where: { email: createAdminDto.email },
     });
     if (existedAdmin) {
@@ -22,12 +23,13 @@ export class AdminService {
     }
     const newAdmin = {
       ...createAdminDto,
+      password: await argon2.hash(createAdminDto.password),
     };
     return await this.adminRepository.save(newAdmin);
   }
 
   async findOne(id: number) {
-    const existedAdmin = await this.adminRepository.find({
+    const existedAdmin = await this.adminRepository.findOne({
       where: { id },
     });
     if (!existedAdmin) {
@@ -36,6 +38,10 @@ export class AdminService {
       );
     }
     return existedAdmin;
+  }
+
+  async findOneByEmail(email: string) {
+    return await this.adminRepository.findOne({ where: { email } });
   }
 
   async update(id: number, updateAdminDto: UpdateAdminDto) {
