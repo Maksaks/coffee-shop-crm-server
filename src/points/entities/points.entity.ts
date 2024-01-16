@@ -1,3 +1,4 @@
+import { Admin } from 'src/admin/entities/admin.entity';
 import { Barista } from 'src/barista/entities/barista.entity';
 import { Ingredient } from 'src/ingredients/entities/ingredient.entity';
 import { Order } from 'src/orders/entities/orders.entity';
@@ -6,6 +7,7 @@ import {
   Entity,
   JoinColumn,
   ManyToMany,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -34,4 +36,6 @@ export class Point {
   })
   @JoinColumn({ name: 'ingredients_id' })
   ingredients: Ingredient[];
+  @ManyToOne(() => Admin, (admin) => admin.points, { onDelete: 'SET NULL' })
+  admin: Admin;
 }

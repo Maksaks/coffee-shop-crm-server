@@ -16,7 +16,9 @@ export class BaristaService {
   ) {}
   async create(createBaristaDto: CreateBaristaDto) {
     const exsitedBarista = await this.baristaRepository.findOne({
-      where: { email: createBaristaDto.email },
+      where: {
+        email: createBaristaDto.email,
+      },
     });
     if (exsitedBarista)
       return new BadRequestException(
@@ -28,13 +30,15 @@ export class BaristaService {
     return await this.baristaRepository.save(newBarista);
   }
 
-  async findAll() {
-    return await this.baristaRepository.find();
+  async findAll(adminID: number) {
+    return await this.baristaRepository.find({
+      where: { admin: { id: adminID } },
+    });
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, adminID: number) {
     const exsitedBarista = await this.baristaRepository.findOne({
-      where: { id: id },
+      where: { id: id, admin: { id: adminID } },
     });
     if (!exsitedBarista)
       return new BadRequestException(`No Barista with #${id}`);
@@ -44,30 +48,34 @@ export class BaristaService {
     });
   }
 
-  async update(id: number, updateBaristaDto: UpdateBaristaDto) {
+  async update(
+    id: number,
+    adminID: number,
+    updateBaristaDto: UpdateBaristaDto,
+  ) {
     const exsitedBarista = await this.baristaRepository.findOne({
-      where: { id: id },
+      where: { id: id, admin: { id: adminID } },
     });
     if (!exsitedBarista)
       return new BadRequestException(`No Barista with #${id}`);
     return await this.baristaRepository.update(id, updateBaristaDto);
   }
 
-  async remove(id: number) {
+  async remove(id: number, adminID: number) {
     const exsitedBarista = await this.baristaRepository.findOne({
-      where: { id: id },
+      where: { id: id, admin: { id: adminID } },
     });
     if (!exsitedBarista)
       return new BadRequestException(`No Barista with #${id}`);
     return await this.baristaRepository.delete(id);
   }
 
-  async setPointToBarista(baristaID: number, pointId: number) {
+  async setPointToBarista(baristaID: number, pointId: number, adminID: number) {
     const barista = await this.baristaRepository.findOne({
-      where: { id: baristaID },
+      where: { id: baristaID, admin: { id: adminID } },
     });
     const point = await this.pointRepository.findOne({
-      where: { id: pointId },
+      where: { id: pointId, admin: { id: adminID } },
     });
     if (!barista || !point) {
       return new BadRequestException(

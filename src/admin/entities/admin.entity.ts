@@ -1,5 +1,7 @@
 import { IsEmail } from 'class-validator';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Barista } from 'src/barista/entities/barista.entity';
+import { Point } from 'src/points/entities/points.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Admin {
@@ -14,4 +16,12 @@ export class Admin {
   email: string;
   @Column()
   password: string;
+  @OneToMany(() => Barista, (barista) => barista.admin, {
+    onDelete: 'SET NULL',
+  })
+  baristas: Barista[];
+  @OneToMany(() => Point, (point) => point.admin, {
+    onDelete: 'SET NULL',
+  })
+  points: Point[];
 }

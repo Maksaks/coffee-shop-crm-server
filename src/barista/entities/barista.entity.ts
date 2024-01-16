@@ -1,4 +1,5 @@
 import { IsEmail, Min } from 'class-validator';
+import { Admin } from 'src/admin/entities/admin.entity';
 import { Order } from 'src/orders/entities/orders.entity';
 import { Point } from 'src/points/entities/points.entity';
 import { Shift } from 'src/shifts/entities/shift.entity';
@@ -8,6 +9,7 @@ import {
   Entity,
   JoinColumn,
   ManyToMany,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -45,4 +47,6 @@ export class Barista {
   @OneToMany(() => Order, (order) => order.barista, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'orders_id' })
   orders: Order[];
+  @ManyToOne(() => Admin, (admin) => admin.baristas, { onDelete: 'SET NULL' })
+  admin: Admin;
 }

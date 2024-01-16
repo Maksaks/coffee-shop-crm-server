@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsOptional } from 'class-validator';
+import { Admin } from 'src/admin/entities/admin.entity';
 import { Barista } from 'src/barista/entities/barista.entity';
 
 export class CreatePointDto {
@@ -12,4 +13,6 @@ export class CreatePointDto {
   workingHours: string;
   @IsOptional()
   barista?: Barista[];
+  @IsNotEmpty()
+  admin: Admin;
 }

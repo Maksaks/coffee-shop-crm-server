@@ -1,4 +1,5 @@
 import { IsEmail, IsNotEmpty, IsOptional, Min } from 'class-validator';
+import { Admin } from 'src/admin/entities/admin.entity';
 import { Point } from 'src/points/entities/points.entity';
 
 export class CreateBaristaDto {
@@ -18,4 +19,6 @@ export class CreateBaristaDto {
   percentFromEarnings: number;
   @IsOptional()
   points?: Point[];
+  @IsNotEmpty()
+  admin: Admin;
 }

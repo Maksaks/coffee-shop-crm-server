@@ -22,21 +22,21 @@ export class BaristaController {
 
   @Get()
   findAll() {
-    return this.baristaService.findAll();
+    return this.baristaService.findAll(1);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.baristaService.findOne(+id);
+    return this.baristaService.findOne(+id, 1);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateBaristaDto: UpdateBaristaDto) {
-    return this.baristaService.update(+id, updateBaristaDto);
+    return this.baristaService.update(+id, 1, updateBaristaDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.baristaService.remove(+id);
+    return this.baristaService.remove(+id, 1);
   }
 }

@@ -23,9 +23,9 @@ export class PointsService {
     return await this.pointRepository.save(createPointDto);
   }
 
-  async findPointsByBaristaID(baristaID: number) {
+  async findPointsByBaristaID(baristaID: number, adminID: number) {
     const existedPoint = await this.pointRepository.find({
-      where: { barista: { id: baristaID } },
+      where: { barista: { id: baristaID }, admin: { id: adminID } },
     });
     if (existedPoint.length) {
       return new BadRequestException(
@@ -37,15 +37,16 @@ export class PointsService {
     });
   }
 
-  async findAll() {
+  async findAll(adminID: number) {
     return await this.pointRepository.find({
+      where: { admin: { id: adminID } },
       relations: { barista: true, ingredients: true, orders: true },
     });
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, adminID: number) {
     const existedPoint = await this.pointRepository.findOne({
-      where: { id },
+      where: { id, admin: { id: adminID } },
     });
     if (!existedPoint) {
       return new BadRequestException(`Point #${id} was not found`);
@@ -55,19 +56,19 @@ export class PointsService {
       relations: { barista: true, ingredients: true, orders: true },
     });
   }
-  async update(id: number, updatePointDto: UpdatePointDto) {
+  async update(id: number, updatePointDto: UpdatePointDto, adminID: number) {
     const existedPoint = await this.pointRepository.findOne({
-      where: { id },
+      where: { id, admin: { id: adminID } },
     });
     if (!existedPoint) {
       return new BadRequestException(`Point #${id} was not found`);
     }
-    return await this.pointRepository.update(id, UpdatePointDto);
+    return await this.pointRepository.update(id, updatePointDto);
   }
 
-  async remove(id: number) {
+  async remove(id: number, adminID: number) {
     const existedPoint = await this.pointRepository.findOne({
-      where: { id },
+      where: { id, admin: { id: adminID } },
     });
     if (!existedPoint) {
       return new BadRequestException(`Point #${id} was not found`);
