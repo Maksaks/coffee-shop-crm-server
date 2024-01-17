@@ -4,7 +4,7 @@ import { DatesEnum } from 'src/enums/DatesEnum.enum';
 import { getHourDifference } from 'src/helpers/GetHourDifference.helper';
 import { Order } from 'src/orders/entities/orders.entity';
 import { OrdersService } from 'src/orders/orders.service';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { CreateShiftDto } from './dto/create-shift.dto';
 import { Shift, ShiftStatus } from './entities/shift.entity';
 
@@ -126,4 +126,102 @@ export class ShiftsService {
       return { status: ShiftStatus.StartOfWork };
     }
   }
+
+  async getBaristaSalaryAndCountOfShiftsForPeriod(
+    adminID: number,
+    baristaID: number,
+    periodFrom: Date,
+    periodTo: Date,
+  ) {
+    let shifts: Shift[];
+    if (periodFrom > periodTo) {
+      shifts = await this.shiftRepository.find({
+        where: {
+          barista: { id: baristaID },
+          point: { admin: { id: adminID } },
+          status: ShiftStatus.EndOfWork,
+          time: Between(periodTo, periodFrom),
+        },
+      });
+    } else {
+      shifts = await this.shiftRepository.find({
+        where: {
+          barista: { id: baristaID },
+          point: { admin: { id: adminID } },
+          status: ShiftStatus.EndOfWork,
+          time: Between(periodFrom, periodTo),
+        },
+      });
+    }
+    if (shifts.length) {
+      return new BadRequestException(`Shifts were not found`);
+    }
+    const totalBaristaSalary = shifts.reduce(
+      (acc, cur) => acc + cur.baristaSalary,
+      0,
+    );
+    const countOfShifts = shifts.length;
+    return { totalBaristaSalary, countOfShifts };
+  }
+  async getAllBaristasSalaryAndCountOfShiftsForPeriod(
+    adminID: number,
+    periodFrom: Date,
+    periodTo: Date,
+  ) {
+    let shifts: Shift[];
+    if (periodFrom > periodTo) {
+      shifts = await this.shiftRepository.find({
+        where: {
+          point: { admin: { id: adminID } },
+          status: ShiftStatus.EndOfWork,
+          time: Between(periodTo, periodFrom),
+        },
+        relations: {
+          barista: true,
+        },
+      });
+    } else {
+      shifts = await this.shiftRepository.find({
+        where: {
+          point: { admin: { id: adminID } },
+          status: ShiftStatus.EndOfWork,
+          time: Between(periodFrom, periodTo),
+        },
+        relations: {
+          barista: true,
+        },
+      });
+    }
+    const baristas: BaristasData[] = shifts.map((shift) => {
+      return {
+        baristaID: shift.barista.id,
+        baristaFullName: shift.barista.name + ' ' + shift.barista.surname,
+      };
+    });
+    if (shifts.length) {
+      return new BadRequestException(`Shifts were not found`);
+    }
+    const totalData = [];
+    for (const barista of baristas) {
+      const baristaShifts = shifts.filter(
+        (shift) => shift.barista.id === barista.baristaID,
+      );
+      const totalBaristaSalary = baristaShifts.reduce(
+        (acc, cur) => acc + cur.baristaSalary,
+        0,
+      );
+      const countOfShifts = baristaShifts.length;
+      totalData.push({
+        ...barista,
+        totalBaristaSalary,
+        countOfShifts,
+      });
+    }
+    return totalData;
+  }
 }
+
+type BaristasData = {
+  baristaID: number;
+  baristaFullName: string;
+};
