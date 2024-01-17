@@ -12,6 +12,8 @@ export class CreatePointDto {
   @IsNotEmpty()
   workingHours: string;
   @IsOptional()
+  pointMoney?: number;
+  @IsOptional()
   barista?: Barista[];
   @IsNotEmpty()
   admin: Admin;

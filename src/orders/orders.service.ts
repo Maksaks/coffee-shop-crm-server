@@ -7,18 +7,36 @@ import {
   getWeekBefore,
   getYearBefore,
 } from 'src/helpers/GetingDate.helper';
+import { PointsService } from 'src/points/points.service';
 import { Between, Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { Order } from './entities/orders.entity';
+import { Order, PaymentMethod } from './entities/orders.entity';
 
 @Injectable()
 export class OrdersService {
   constructor(
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
+    private readonly pointService: PointsService,
   ) {}
   async create(createOrderDto: CreateOrderDto) {
+    if (createOrderDto.paymentMethod === PaymentMethod.ByCash) {
+      const differenceBetweenReceiveAndTotal =
+        createOrderDto.receivedAmount - createOrderDto.totalAmount;
+      if (differenceBetweenReceiveAndTotal !== 0) {
+        await this.pointService.getMoneyFromBalance(
+          createOrderDto.point.id,
+          createOrderDto.barista.id,
+          differenceBetweenReceiveAndTotal,
+        );
+      }
+      await this.pointService.putMoneyOnBalance(
+        createOrderDto.point.id,
+        createOrderDto.barista.id,
+        createOrderDto.totalAmount,
+      );
+    }
     return await this.orderRepository.save(createOrderDto);
   }
 

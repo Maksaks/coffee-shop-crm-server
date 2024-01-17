@@ -51,7 +51,9 @@ export class BaristaService {
   }
 
   async findOneByEmail(email: string) {
-    return await this.baristaRepository.findOne({ where: { email } });
+    return await this.baristaRepository.findOne({
+      where: { email },
+    });
   }
 
   async update(

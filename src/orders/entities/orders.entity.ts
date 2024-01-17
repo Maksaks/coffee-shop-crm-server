@@ -16,6 +16,11 @@ export enum OrderStatus {
   Ready = 'Ready',
 }
 
+export enum PaymentMethod {
+  ByCash = 'By Cash',
+  ByCard = 'By Card',
+}
+
 @Entity()
 export class Order {
   @PrimaryGeneratedColumn()
@@ -24,8 +29,12 @@ export class Order {
   createdAt: Date;
   @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.InProgress })
   status: OrderStatus;
+  @Column({ type: 'enum', enum: PaymentMethod, default: PaymentMethod.ByCash })
+  paymentMethod: PaymentMethod;
   @Column()
   totalAmount: number;
+  @Column()
+  receivedAmount: number;
   @ManyToOne(() => Barista, (barista) => barista.orders, {
     onDelete: 'SET NULL',
   })

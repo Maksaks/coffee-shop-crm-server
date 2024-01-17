@@ -25,6 +25,8 @@ export class Point {
   description: string;
   @Column()
   workingHours: string;
+  @Column({ default: 0 })
+  pointMoney: number;
   @ManyToMany(() => Barista, (barista) => barista.points, {
     onDelete: 'SET NULL',
   })

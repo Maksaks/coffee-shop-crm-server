@@ -85,4 +85,33 @@ export class PointsService {
     }
     return await this.pointRepository.delete(id);
   }
+
+  async getMoneyFromBalance(
+    pointId: number,
+    baristaId: number,
+    amount: number,
+  ) {
+    const existedPoint = await this.pointRepository.findOne({
+      where: { id: pointId, barista: { id: baristaId } },
+    });
+    if (!existedPoint) {
+      return new BadRequestException(`Point #${pointId} was not found`);
+    }
+    if (existedPoint.pointMoney < amount) {
+      return new BadRequestException(`Not enough cash at the point`);
+    }
+    existedPoint.pointMoney = existedPoint.pointMoney - amount;
+    return await this.pointRepository.save(existedPoint);
+  }
+  async putMoneyOnBalance(pointId: number, baristaId: number, amount: number) {
+    const existedPoint = await this.pointRepository.findOne({
+      where: { id: pointId, barista: { id: baristaId } },
+    });
+    if (!existedPoint) {
+      return new BadRequestException(`Point #${pointId} was not found`);
+    }
+
+    existedPoint.pointMoney = existedPoint.pointMoney + amount;
+    return await this.pointRepository.save(existedPoint);
+  }
 }
