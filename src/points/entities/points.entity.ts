@@ -31,7 +31,7 @@ export class Point {
     onDelete: 'SET NULL',
   })
   barista: Barista[];
-  @OneToMany(() => Order, (order) => order.point, { onDelete: 'SET NULL' })
+  @OneToMany(() => Order, (order) => order.point)
   @JoinColumn({ name: 'orders_id' })
   orders: Order[];
   @OneToMany(() => Ingredient, (ingredient) => ingredient.point, {

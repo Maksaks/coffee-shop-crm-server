@@ -15,9 +15,10 @@ export class BaristaService {
     @InjectRepository(Point)
     private readonly pointRepository: Repository<Point>,
   ) {}
-  async create(createBaristaDto: CreateBaristaDto) {
+  async create(adminID: number, createBaristaDto: CreateBaristaDto) {
     const exsitedBarista = await this.baristaRepository.findOne({
       where: {
+        admin: { id: adminID },
         email: createBaristaDto.email,
       },
     });
@@ -28,6 +29,7 @@ export class BaristaService {
     const newBarista = {
       ...createBaristaDto,
       password: await argon2.hash(createBaristaDto.password),
+      admin: { id: adminID },
     };
     return await this.baristaRepository.save(newBarista);
   }
@@ -35,6 +37,11 @@ export class BaristaService {
   async findAll(adminID: number) {
     return await this.baristaRepository.find({
       where: { admin: { id: adminID } },
+      relations: {
+        points: true,
+        orders: true,
+        shifts: true,
+      },
     });
   }
 
@@ -66,6 +73,19 @@ export class BaristaService {
     });
     if (!exsitedBarista)
       return new BadRequestException(`No Barista with #${id}`);
+
+    if (
+      updateBaristaDto.email &&
+      updateBaristaDto.email !== exsitedBarista.email
+    ) {
+      const uniqueEmail = await this.baristaRepository.findOne({
+        where: { email: updateBaristaDto.email, admin: { id: adminID } },
+      });
+      if (uniqueEmail)
+        return new BadRequestException(
+          `Barista with email ${updateBaristaDto.email}`,
+        );
+    }
     return await this.baristaRepository.update(id, updateBaristaDto);
   }
 
@@ -81,16 +101,40 @@ export class BaristaService {
   async setPointToBarista(baristaID: number, pointId: number, adminID: number) {
     const barista = await this.baristaRepository.findOne({
       where: { id: baristaID, admin: { id: adminID } },
+      relations: { points: true },
     });
     const point = await this.pointRepository.findOne({
       where: { id: pointId, admin: { id: adminID } },
     });
     if (!barista || !point) {
       return new BadRequestException(
-        'Check input date, one or both entities are no exist',
+        'Check input date, one or both entities are not exist',
+      );
+    }
+    if (barista.points.find((point) => point.id == pointId)) {
+      return new BadRequestException(
+        `Point with #${pointId} has already included in this barista`,
       );
     }
     barista.points = [...barista.points, point];
+    return await this.baristaRepository.save(barista);
+  }
+  async removePointFromBarista(
+    baristaID: number,
+    pointId: number,
+    adminID: number,
+  ) {
+    const barista = await this.baristaRepository.findOne({
+      where: { id: baristaID, admin: { id: adminID } },
+      relations: { points: true },
+    });
+    if (!barista) {
+      return new BadRequestException('Barista was not found');
+    }
+    if (!barista.points.find((item) => item.id == pointId)) {
+      return new BadRequestException('Point was not found');
+    }
+    barista.points = barista.points.filter((point) => point.id != pointId);
     return await this.baristaRepository.save(barista);
   }
 }

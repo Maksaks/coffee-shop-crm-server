@@ -1,5 +1,6 @@
 import { IsEmail } from 'class-validator';
 import { Barista } from 'src/barista/entities/barista.entity';
+import { Category } from 'src/categories/entities/category.entity';
 import { Point } from 'src/points/entities/points.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
@@ -24,4 +25,8 @@ export class Admin {
     onDelete: 'SET NULL',
   })
   points: Point[];
+  @OneToMany(() => Category, (category) => category.admin, {
+    onDelete: 'CASCADE',
+  })
+  categories: Category[];
 }

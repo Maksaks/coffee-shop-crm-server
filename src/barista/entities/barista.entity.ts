@@ -37,7 +37,6 @@ export class Barista {
   @CreateDateColumn()
   dateOfEmployment: Date;
   @ManyToMany(() => Point, (point) => point.barista, {
-    onDelete: 'SET NULL',
     onUpdate: 'CASCADE',
   })
   @JoinTable()

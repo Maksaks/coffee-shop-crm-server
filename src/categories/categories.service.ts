@@ -15,9 +15,10 @@ export class CategoriesService {
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
   ) {}
-  async create(createCategoryDto: CreateCategoryDto) {
+  async create(adminID: number, createCategoryDto: CreateCategoryDto) {
     const isCategoryExist = await this.categoryRepository.findBy({
       title: createCategoryDto.title,
+      admin: { id: adminID },
     });
     if (isCategoryExist.length) {
       throw new BadRequestException(
@@ -26,12 +27,15 @@ export class CategoriesService {
     }
     const newCategory = {
       title: createCategoryDto.title,
+      admin: { id: adminID },
     };
     return await this.categoryRepository.save(newCategory);
   }
 
-  async findAll() {
-    return await this.categoryRepository.find();
+  async findAll(adminID: number) {
+    return await this.categoryRepository.find({
+      where: { admin: { id: adminID } },
+    });
   }
 
   async findOne(id: number) {
@@ -49,16 +53,24 @@ export class CategoriesService {
     return category;
   }
 
-  async update(id: number, updateCategoryDto: UpdateCategoryDto) {
-    const category = await this.categoryRepository.findOne({ where: { id } });
+  async update(
+    id: number,
+    adminID: number,
+    updateCategoryDto: UpdateCategoryDto,
+  ) {
+    const category = await this.categoryRepository.findOne({
+      where: { id, admin: { id: adminID } },
+    });
     if (!category) {
       throw new NotFoundException(`Category with #${id} not found`);
     }
     return await this.categoryRepository.update(id, updateCategoryDto);
   }
 
-  async remove(id: number) {
-    const category = await this.categoryRepository.findOne({ where: { id } });
+  async remove(id: number, adminID: number) {
+    const category = await this.categoryRepository.findOne({
+      where: { id, admin: { id: adminID } },
+    });
     if (!category) {
       throw new NotFoundException('Category not found');
     }

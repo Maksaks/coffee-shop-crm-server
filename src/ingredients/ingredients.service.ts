@@ -20,7 +20,10 @@ export class IngredientsService {
         `Ingredient with name "${createIngredientDro.name}" has already existed on Point with #${pointID}`,
       );
     }
-    return await this.ingredientRepository.save(createIngredientDro);
+    return await this.ingredientRepository.save({
+      ...createIngredientDro,
+      point: { id: pointID },
+    });
   }
   async findAll() {
     return await this.ingredientRepository.find({ relations: { point: true } });
