@@ -1,5 +1,6 @@
 import { Category } from 'src/categories/entities/category.entity';
 import { Order } from 'src/orders/entities/orders.entity';
+import { Point } from 'src/points/entities/points.entity';
 import { PositionDiscount } from 'src/position-discount/entities/position-discount.entity';
 import { Recipe } from 'src/recipe/entities/recipe.entity';
 import {
@@ -42,4 +43,8 @@ export class MenuPosition {
     onDelete: 'SET NULL',
   })
   category: Category;
+  @ManyToOne(() => Point, (point) => point.menuPositions, {
+    onDelete: 'SET NULL',
+  })
+  point: Point;
 }

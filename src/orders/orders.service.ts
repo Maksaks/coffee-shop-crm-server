@@ -37,6 +37,11 @@ export class OrdersService {
         createOrderDto.totalAmount,
       );
     }
+    await this.pointService.updateIngredientsOnPoint(
+      createOrderDto.point.id,
+      createOrderDto.menuPositions,
+    );
+
     return await this.orderRepository.save(createOrderDto);
   }
 

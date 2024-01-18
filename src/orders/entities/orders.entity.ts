@@ -35,6 +35,8 @@ export class Order {
   totalAmount: number;
   @Column()
   receivedAmount: number;
+  @Column()
+  costOfIngredients: number;
   @ManyToOne(() => Barista, (barista) => barista.orders, {
     onDelete: 'SET NULL',
   })

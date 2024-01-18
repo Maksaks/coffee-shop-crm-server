@@ -1,6 +1,7 @@
 import { Admin } from 'src/admin/entities/admin.entity';
 import { Barista } from 'src/barista/entities/barista.entity';
 import { Ingredient } from 'src/ingredients/entities/ingredient.entity';
+import { MenuPosition } from 'src/menu-position/entities/menu-position.entity';
 import { Order } from 'src/orders/entities/orders.entity';
 import { Shift } from 'src/shifts/entities/shift.entity';
 import {
@@ -43,4 +44,9 @@ export class Point {
   admin: Admin;
   @OneToMany(() => Shift, (shift) => shift.point, { onDelete: 'SET NULL' })
   shifts: Shift[];
+  @OneToMany(() => MenuPosition, (position) => position.point, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'menuPositions_id' })
+  menuPositions: MenuPosition[];
 }

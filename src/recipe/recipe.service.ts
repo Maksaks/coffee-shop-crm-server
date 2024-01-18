@@ -20,7 +20,7 @@ export class RecipeService {
         'Recipe for this position has already existed',
       );
     }
-    return await this.recipeRepository.save({ ...createRecipeDto });
+    return await this.recipeRepository.save(createRecipeDto);
   }
   async findAll() {
     return this.recipeRepository.find();
@@ -48,13 +48,14 @@ export class RecipeService {
     return await this.recipeRepository.update(id, updateRecipeDto);
   }
 
-  async remove(id: number) {
+  async remove(id: number, adminID: number) {
     const existedRecipe = await this.recipeRepository.findOne({
-      where: { id },
+      where: { id, menuPosition: { point: { admin: { id: adminID } } } },
     });
     if (existedRecipe) {
       return new BadRequestException(`Recipe #${id} was not found`);
     }
+    existedRecipe.ingredients = [];
     return await this.recipeRepository.delete(id);
   }
 }

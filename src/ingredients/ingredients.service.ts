@@ -11,9 +11,16 @@ export class IngredientsService {
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
   ) {}
-  async create(createIngredientDro: CreateIngredientDto, pointID: number) {
+  async create(
+    createIngredientDro: CreateIngredientDto,
+    pointID: number,
+    adminID: number,
+  ) {
     const existedIngredient = await this.ingredientRepository.findOne({
-      where: { name: createIngredientDro.name, point: { id: pointID } },
+      where: {
+        name: createIngredientDro.name,
+        point: { id: pointID, admin: { id: adminID } },
+      },
     });
     if (existedIngredient) {
       return new BadRequestException(
@@ -25,8 +32,11 @@ export class IngredientsService {
       point: { id: pointID },
     });
   }
-  async findAll() {
-    return await this.ingredientRepository.find({ relations: { point: true } });
+  async findAll(adminID: number) {
+    return await this.ingredientRepository.find({
+      where: { point: { admin: { id: adminID } } },
+      relations: { point: true },
+    });
   }
   async findAllOnPoint(pointID: number) {
     const existedIngredient = await this.ingredientRepository.find({
@@ -65,9 +75,13 @@ export class IngredientsService {
       relations: { recipes: true, point: true },
     });
   }
-  async update(id: number, updateIngredientDto: UpdateIngredientDto) {
+  async update(
+    id: number,
+    adminID: number,
+    updateIngredientDto: UpdateIngredientDto,
+  ) {
     const existedIngredient = await this.ingredientRepository.findOne({
-      where: { id },
+      where: { id, point: { admin: { id: adminID } } },
     });
     if (!existedIngredient) {
       return new BadRequestException(`Ingredient with #${id} was not found`);
@@ -75,13 +89,32 @@ export class IngredientsService {
     return await this.ingredientRepository.update(id, updateIngredientDto);
   }
 
-  async remove(id: number) {
+  async remove(id: number, adminID: number) {
     const existedIngredient = await this.ingredientRepository.findOne({
-      where: { id },
+      where: { id, point: { admin: { id: adminID } } },
     });
     if (!existedIngredient) {
       return new BadRequestException(`Ingredient with #${id} was not found`);
     }
+    existedIngredient.recipes = [];
+    await this.ingredientRepository.save(existedIngredient);
     return await this.ingredientRepository.delete(id);
+  }
+
+  async addQuantityOfIngredientsOnPoint(
+    baristaID: number,
+    ingredientID: number,
+    newQuantityOfIngredient,
+  ) {
+    const existedIngredient = await this.ingredientRepository.findOne({
+      where: { id: ingredientID, point: { barista: { id: baristaID } } },
+    });
+    if (!existedIngredient) {
+      return new BadRequestException(
+        `Ingredient with #${ingredientID} was not found`,
+      );
+    }
+    existedIngredient.quantity += newQuantityOfIngredient;
+    return await this.ingredientRepository.save(existedIngredient);
   }
 }

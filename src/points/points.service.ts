@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { MenuPosition } from 'src/menu-position/entities/menu-position.entity';
 import { Repository } from 'typeorm';
 import { CreatePointDto } from './dto/create-point.dto';
 import { UpdatePointDto } from './dto/update-point.dto';
@@ -53,9 +54,9 @@ export class PointsService {
     });
   }
 
-  async findOne(id: number, adminID: number) {
+  async findOne(id: number) {
     const existedPoint = await this.pointRepository.findOne({
-      where: { id, admin: { id: adminID } },
+      where: { id },
     });
     if (!existedPoint) {
       return new BadRequestException(`Point #${id} was not found`);
@@ -125,5 +126,23 @@ export class PointsService {
 
     existedPoint.pointMoney = existedPoint.pointMoney + amount;
     return await this.pointRepository.save(existedPoint);
+  }
+
+  async updateIngredientsOnPoint(pointID: number, positions: MenuPosition[]) {
+    const existedPoint = await this.pointRepository.findOne({
+      where: { id: pointID },
+      relations: { ingredients: true },
+    });
+    if (!existedPoint) {
+      return new BadRequestException(`Point #${pointID} was not found`);
+    }
+    for (const position of positions) {
+      const ingredients = position.recipe.ingredients;
+      for (const ingredient of ingredients) {
+        const indexOfIngredient = existedPoint.ingredients.indexOf(ingredient);
+        existedPoint.ingredients[indexOfIngredient].quantity -= 1;
+      }
+    }
+    this.pointRepository.save(existedPoint);
   }
 }

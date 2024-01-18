@@ -28,8 +28,9 @@ export class MenuPositionService {
     };
     return await this.menuPositionRepository.save(newCategory);
   }
-  async findAll() {
+  async getMenu(pointID: number) {
     return await this.menuPositionRepository.find({
+      where: { point: { id: pointID } },
       relations: { category: true, recipe: true, discount: true },
     });
   }
