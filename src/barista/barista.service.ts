@@ -45,9 +45,9 @@ export class BaristaService {
     });
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, adminID: number) {
     const exsitedBarista = await this.baristaRepository.findOne({
-      where: { id },
+      where: { id, admin: { id: adminID } },
     });
     if (!exsitedBarista)
       return new BadRequestException(`No Barista with #${id}`);
@@ -60,6 +60,7 @@ export class BaristaService {
   async findOneByEmail(email: string) {
     return await this.baristaRepository.findOne({
       where: { email },
+      relations: { admin: true },
     });
   }
 
@@ -131,14 +132,13 @@ export class BaristaService {
     adminID: number,
   ) {
     const barista = await this.baristaRepository.findOne({
-      where: { id: baristaID, admin: { id: adminID } },
+      where: { id: baristaID, admin: { id: adminID }, points: { id: pointId } },
       relations: { points: true },
     });
     if (!barista) {
-      return new BadRequestException('Barista was not found');
-    }
-    if (!barista.points.find((item) => item.id == pointId)) {
-      return new BadRequestException('Point was not found');
+      return new BadRequestException(
+        'Check input date, one or both entities are not exist',
+      );
     }
     barista.points = barista.points.filter((point) => point.id != pointId);
     return await this.baristaRepository.save(barista);

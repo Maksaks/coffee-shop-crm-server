@@ -31,7 +31,6 @@ export class PointsService {
     const existedPoint = await this.pointRepository.find({
       where: { barista: { id: baristaID }, admin: { id: adminID } },
     });
-    console.log(existedPoint);
     if (!existedPoint.length) {
       return new BadRequestException(
         `Points for Barista #${baristaID} were not found`,
@@ -54,9 +53,9 @@ export class PointsService {
     });
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, adminID: number) {
     const existedPoint = await this.pointRepository.findOne({
-      where: { id },
+      where: { id, admin: { id: adminID } },
     });
     if (!existedPoint) {
       return new BadRequestException(`Point #${id} was not found`);

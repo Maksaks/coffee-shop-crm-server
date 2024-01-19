@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Point } from 'src/points/entities/points.entity';
 import { Repository } from 'typeorm';
 import { CreateIngredientDto } from './dto/create-ingredient.dto';
 import { UpdateIngredientDto } from './dto/update-ingredient.dto';
@@ -10,21 +11,32 @@ export class IngredientsService {
   constructor(
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
+    @InjectRepository(Point)
+    private readonly pointRepository: Repository<Point>,
   ) {}
   async create(
     createIngredientDro: CreateIngredientDto,
     pointID: number,
     adminID: number,
   ) {
+    const existedPoint = await this.pointRepository.findOne({
+      where: {
+        id: pointID,
+        admin: { id: adminID },
+      },
+    });
+    if (!existedPoint) {
+      return new BadRequestException(`Point #${[pointID]} has not existed`);
+    }
     const existedIngredient = await this.ingredientRepository.findOne({
       where: {
         name: createIngredientDro.name,
-        point: { id: pointID, admin: { id: adminID } },
+        point: { id: pointID },
       },
     });
     if (existedIngredient) {
       return new BadRequestException(
-        `Ingredient with name "${createIngredientDro.name}" has already existed on Point with #${pointID}`,
+        `Ingredient with name [${createIngredientDro.name}] has already existed on Point with #${pointID}`,
       );
     }
     return await this.ingredientRepository.save({
@@ -38,42 +50,39 @@ export class IngredientsService {
       relations: { point: true },
     });
   }
-  async findAllOnPoint(pointID: number) {
+  async findAllOnPoint(pointID: number, adminID: number) {
     const existedIngredient = await this.ingredientRepository.find({
-      where: { point: { id: pointID } },
+      where: { point: { id: pointID, admin: { id: adminID } } },
     });
-    if (existedIngredient.length) {
+    if (!existedIngredient.length) {
       return new BadRequestException(`No ingredients on Point #${pointID}`);
     }
-    return await this.ingredientRepository.find({
-      where: { point: { id: pointID } },
-    });
+    return existedIngredient;
   }
-  async findOneByID(id: number) {
+  async findOneByID(id: number, adminID: number) {
     const existedIngredient = await this.ingredientRepository.findOne({
-      where: { id },
+      where: {
+        id,
+        point: { admin: { id: adminID } },
+      },
+      relations: { recipes: true, point: true },
     });
     if (!existedIngredient) {
       return new BadRequestException(`Ingredient with #${id} was not found`);
     }
-    return await this.ingredientRepository.findOne({
-      where: { id },
+    return existedIngredient;
+  }
+  async findOneByName(name: string, adminID: number) {
+    const existedIngredient = await this.ingredientRepository.findOne({
+      where: { name, point: { admin: { id: adminID } } },
       relations: { recipes: true, point: true },
     });
-  }
-  async findOneByName(name: string) {
-    const existedIngredient = await this.ingredientRepository.find({
-      where: { name },
-    });
-    if (existedIngredient.length) {
+    if (!existedIngredient) {
       return new BadRequestException(
         `Ingredients with name "${name}" was not found`,
       );
     }
-    return await this.ingredientRepository.find({
-      where: { name },
-      relations: { recipes: true, point: true },
-    });
+    return existedIngredient;
   }
   async update(
     id: number,

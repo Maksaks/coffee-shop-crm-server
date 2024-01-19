@@ -38,10 +38,11 @@ export class CategoriesService {
     });
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, adminID: number) {
     const category = await this.categoryRepository.findOne({
       where: {
         id,
+        admin: { id: adminID },
       },
       relations: {
         positions: true,

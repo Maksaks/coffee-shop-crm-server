@@ -26,6 +26,9 @@ export class AuthService {
       user = (await this.adminService.findOneByEmail(email)) as Admin;
       role = Roles.Admin;
     }
+    if (!user) {
+      throw new UnauthorizedException('Email or password is incorrect');
+    }
     const isCorrectPassword = await argon2.verify(user.password, pass);
     if (user && isCorrectPassword) {
       const { password, ...result } = user;

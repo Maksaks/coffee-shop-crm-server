@@ -6,18 +6,26 @@ import {
   Param,
   Patch,
   Post,
+  Request,
+  UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { BaristaService } from 'src/barista/barista.service';
 import { CreateBaristaDto } from 'src/barista/dto/create-barista.dto';
 import { UpdateBaristaDto } from 'src/barista/dto/update-barista.dto';
 import { CategoriesService } from 'src/categories/categories.service';
 import { CreateCategoryDto } from 'src/categories/dto/create-category.dto';
 import { UpdateCategoryDto } from 'src/categories/dto/update-category.dto';
+import { CreateIngredientDto } from 'src/ingredients/dto/create-ingredient.dto';
+import { GetByNameIngredientDto } from 'src/ingredients/dto/get-by-name-ingredient.dto';
+import { UpdateIngredientDto } from 'src/ingredients/dto/update-ingredient.dto';
+import { IngredientsService } from 'src/ingredients/ingredients.service';
 import { CreatePointDto } from 'src/points/dto/create-point.dto';
 import { UpdatePointDto } from 'src/points/dto/update-point.dto';
 import { PointsService } from 'src/points/points.service';
+import { RecipeService } from 'src/recipe/recipe.service';
 import { AdminService } from './admin.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
 
@@ -28,115 +36,219 @@ export class AdminController {
     private readonly categoriesService: CategoriesService,
     private readonly baristaService: BaristaService,
     private readonly pointService: PointsService,
+    private readonly ingredientService: IngredientsService,
+    private readonly recipesService: RecipeService,
   ) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   @UsePipes(new ValidationPipe())
   createAdmin(@Body() createAdminDto: CreateAdminDto) {
     return this.adminService.create(createAdminDto);
   }
 
   @Post('categories')
+  @UseGuards(JwtAuthGuard)
   @UsePipes(new ValidationPipe())
-  createCategory(@Body() categoryDto: CreateCategoryDto) {
-    return this.categoriesService.create(1, categoryDto);
+  createCategory(@Request() req, @Body() categoryDto: CreateCategoryDto) {
+    return this.categoriesService.create(req.user.id, categoryDto);
   }
 
   @Get('categories')
-  getAllCategories() {
-    return this.categoriesService.findAll(1);
+  @UseGuards(JwtAuthGuard)
+  getAllCategories(@Request() req) {
+    return this.categoriesService.findAll(req.user.id);
   }
 
   @Get('categories/:id')
-  getCategoriesById(@Param('id') id: number) {
-    return this.categoriesService.findOne(id);
+  @UseGuards(JwtAuthGuard)
+  getCategoriesById(@Param('id') id: number, @Request() req) {
+    return this.categoriesService.findOne(id, req.user.id);
   }
 
   @Patch('categories/:id')
+  @UseGuards(JwtAuthGuard)
   @UsePipes(new ValidationPipe())
   updateCategory(
     @Param('id') id: number,
     @Body() updateCategoryDto: UpdateCategoryDto,
+    @Request() req,
   ) {
-    return this.categoriesService.update(id, 1, updateCategoryDto);
+    return this.categoriesService.update(id, req.user.id, updateCategoryDto);
   }
   @Delete('categories/:id')
-  deleteCategory(@Param('id') id: number) {
-    return this.categoriesService.remove(id, 1);
+  @UseGuards(JwtAuthGuard)
+  deleteCategory(@Param('id') id: number, @Request() req) {
+    return this.categoriesService.remove(id, req.user.id);
   }
 
   @Post('baristas')
+  @UseGuards(JwtAuthGuard)
   @UsePipes(new ValidationPipe())
-  createBarista(@Body() createBaristaDto: CreateBaristaDto) {
-    return this.baristaService.create(1, createBaristaDto);
+  createBarista(@Body() createBaristaDto: CreateBaristaDto, @Request() req) {
+    return this.baristaService.create(req.user.id, createBaristaDto);
   }
 
   @Get('baristas')
-  getAllBaristas() {
-    return this.baristaService.findAll(1);
+  @UseGuards(JwtAuthGuard)
+  getAllBaristas(@Request() req) {
+    return this.baristaService.findAll(req.user.id);
   }
 
   @Get('baristas/:id')
-  getBaristaByID(@Param('id') id: number) {
-    return this.baristaService.findOne(id);
+  @UseGuards(JwtAuthGuard)
+  getBaristaByID(@Param('id') id: number, @Request() req) {
+    return this.baristaService.findOne(id, req.user.id);
   }
 
   @Patch('baristas/:id')
+  @UseGuards(JwtAuthGuard)
   @UsePipes(new ValidationPipe())
   updateBarista(
     @Param('id') id: number,
     @Body() updateBaristaDto: UpdateBaristaDto,
+    @Request() req,
   ) {
-    return this.baristaService.update(id, 1, updateBaristaDto);
+    return this.baristaService.update(id, req.user.id, updateBaristaDto);
   }
 
   @Delete('baristas/:id')
-  deleteBarista(@Param('id') id: number) {
-    return this.baristaService.remove(id, 1);
+  @UseGuards(JwtAuthGuard)
+  deleteBarista(@Param('id') id: number, @Request() req) {
+    return this.baristaService.remove(id, req.user.id);
   }
 
   @Post('barista/:baristaId/setPoint/:pointID')
+  @UseGuards(JwtAuthGuard)
   setPointToBarista(
     @Param('baristaId') baristaId: number,
     @Param('pointID') pointID: number,
+    @Request() req,
   ) {
-    return this.baristaService.setPointToBarista(baristaId, pointID, 1);
+    return this.baristaService.setPointToBarista(
+      baristaId,
+      pointID,
+      req.user.id,
+    );
   }
   @Post('barista/:baristaId/removePoint/:pointID')
-  removePointToBarista(
+  @UseGuards(JwtAuthGuard)
+  removePointFromBarista(
     @Param('baristaId') baristaId: number,
     @Param('pointID') pointID: number,
+    @Request() req,
   ) {
-    return this.baristaService.removePointFromBarista(baristaId, pointID, 1);
+    return this.baristaService.removePointFromBarista(
+      baristaId,
+      pointID,
+      req.user.id,
+    );
   }
 
   @Post('points')
+  @UseGuards(JwtAuthGuard)
   @UsePipes(new ValidationPipe())
-  createPoint(@Body() createPointDto: CreatePointDto) {
-    return this.pointService.create(1, createPointDto);
+  createPoint(@Body() createPointDto: CreatePointDto, @Request() req) {
+    return this.pointService.create(req.user.id, createPointDto);
   }
 
   @Get('points/forBarista/:id')
-  getPointsByBaristaID(@Param('id') id: number) {
-    return this.pointService.findPointsByBaristaID(id, 1);
+  @UseGuards(JwtAuthGuard)
+  getPointsByBaristaID(@Param('id') id: number, @Request() req) {
+    return this.pointService.findPointsByBaristaID(id, req.user.id);
   }
 
   @Get('points')
-  getAllPoints() {
-    return this.pointService.findAll(1);
+  @UseGuards(JwtAuthGuard)
+  getAllPoints(@Request() req) {
+    return this.pointService.findAll(req.user.id);
   }
   @Get('points/:id')
-  getPoint(@Param('id') id: number) {
-    return this.pointService.findOne(id);
+  @UseGuards(JwtAuthGuard)
+  getPoint(@Param('id') id: number, @Request() req) {
+    return this.pointService.findOne(id, req.user.id);
   }
 
   @Patch('points/:id')
-  updatePoint(@Param('id') id: number, @Body() updatePointDto: UpdatePointDto) {
-    return this.pointService.update(id, updatePointDto, 1);
+  @UseGuards(JwtAuthGuard)
+  updatePoint(
+    @Param('id') id: number,
+    @Request() req,
+    @Body() updatePointDto: UpdatePointDto,
+  ) {
+    return this.pointService.update(id, updatePointDto, req.user.id);
   }
 
   @Delete('points/:id')
-  deletePoint(@Param('id') id: number) {
-    return this.pointService.remove(id, 1);
+  @UseGuards(JwtAuthGuard)
+  deletePoint(@Param('id') id: number, @Request() req) {
+    return this.pointService.remove(id, req.user.id);
   }
+
+  @Post('ingredients/:pointID')
+  @UsePipes(new ValidationPipe())
+  @UseGuards(JwtAuthGuard)
+  createIngredient(
+    @Param('pointID') id: number,
+    @Body() createIngredientDto: CreateIngredientDto,
+    @Request() req,
+  ) {
+    return this.ingredientService.create(createIngredientDto, id, req.user.id);
+  }
+
+  @Get('ingredients')
+  @UseGuards(JwtAuthGuard)
+  getAllIngredients(@Request() req) {
+    return this.ingredientService.findAll(req.user.id);
+  }
+
+  @Get('ingredients/byID/:id')
+  @UseGuards(JwtAuthGuard)
+  @UsePipes(new ValidationPipe())
+  getIngredientByID(@Param('id') id: number, @Request() req) {
+    return this.ingredientService.findOneByID(id, req.user.id);
+  }
+
+  @Get('ingredients/byName')
+  @UseGuards(JwtAuthGuard)
+  @UsePipes(new ValidationPipe())
+  getIngredientByName(
+    @Body() getByNameIngredientDto: GetByNameIngredientDto,
+    @Request() req,
+  ) {
+    return this.ingredientService.findOneByName(
+      getByNameIngredientDto.name,
+      req.user.id,
+    );
+  }
+
+  @Get('ingredients/:pointID')
+  @UseGuards(JwtAuthGuard)
+  getAllIngredientsOnPoint(@Param('pointID') pointID: number, @Request() req) {
+    return this.ingredientService.findAllOnPoint(pointID, req.user.id);
+  }
+
+  @Patch('ingredients/:id')
+  @UseGuards(JwtAuthGuard)
+  @UsePipes(new ValidationPipe())
+  updateIngredient(
+    @Body() updateIngredientDto: UpdateIngredientDto,
+    @Request() req,
+    @Param('id') id: number,
+  ) {
+    return this.ingredientService.update(id, req.user.id, updateIngredientDto);
+  }
+
+  @Delete('ingredients/:id')
+  @UseGuards(JwtAuthGuard)
+  deleteIngredient(@Param('id') id: number, @Request() req) {
+    return this.ingredientService.remove(id, req.user.id);
+  }
+
+  // @Post('recipes')
+  // @UseGuards(JwtAuthGuard)
+  // @UsePipes(new ValidationPipe())
+  // createRecipe(@Body() createRecipeDto: CreateRecipeDto, @Request() req) {
+  //   return this.recipesService.create(createRecipeDto);
+  // }
 }
