@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { BaristaModule } from 'src/barista/barista.module';
 import { CategoriesModule } from 'src/categories/categories.module';
 import { IngredientsModule } from 'src/ingredients/ingredients.module';
+import { MenuPositionModule } from 'src/menu-position/menu-position.module';
 import { PointModule } from 'src/points/points.module';
 import { RecipesModule } from 'src/recipe/recipe.module';
 import { AdminController } from './admin.controller';
@@ -17,6 +18,7 @@ import { Admin } from './entities/admin.entity';
     PointModule,
     IngredientsModule,
     RecipesModule,
+    MenuPositionModule,
   ],
   controllers: [AdminController],
   providers: [AdminService],

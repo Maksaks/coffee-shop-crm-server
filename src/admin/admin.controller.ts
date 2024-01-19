@@ -22,6 +22,9 @@ import { CreateIngredientDto } from 'src/ingredients/dto/create-ingredient.dto';
 import { GetByNameIngredientDto } from 'src/ingredients/dto/get-by-name-ingredient.dto';
 import { UpdateIngredientDto } from 'src/ingredients/dto/update-ingredient.dto';
 import { IngredientsService } from 'src/ingredients/ingredients.service';
+import { CreatePositionDto } from 'src/menu-position/dto/create-position.dto';
+import { UpdatePositionDto } from 'src/menu-position/dto/update-position.dto';
+import { MenuPositionService } from 'src/menu-position/menu-position.service';
 import { CreatePointDto } from 'src/points/dto/create-point.dto';
 import { UpdatePointDto } from 'src/points/dto/update-point.dto';
 import { PointsService } from 'src/points/points.service';
@@ -37,6 +40,7 @@ export class AdminController {
     private readonly baristaService: BaristaService,
     private readonly pointService: PointsService,
     private readonly ingredientService: IngredientsService,
+    private readonly menuPositionService: MenuPositionService,
     private readonly recipesService: RecipeService,
   ) {}
 
@@ -245,10 +249,71 @@ export class AdminController {
     return this.ingredientService.remove(id, req.user.id);
   }
 
-  // @Post('recipes')
-  // @UseGuards(JwtAuthGuard)
-  // @UsePipes(new ValidationPipe())
-  // createRecipe(@Body() createRecipeDto: CreateRecipeDto, @Request() req) {
-  //   return this.recipesService.create(createRecipeDto);
-  // }
+  @Post('positions/:pointID')
+  @UseGuards(JwtAuthGuard)
+  @UsePipes(new ValidationPipe())
+  createPosition(
+    @Param('pointID') pointID: number,
+    @Body() createPositionDto: CreatePositionDto,
+    @Request() req,
+  ) {
+    return this.menuPositionService.create(
+      createPositionDto,
+      pointID,
+      req.user.id,
+    );
+  }
+
+  @Get('positions/:pointID')
+  @UseGuards(JwtAuthGuard)
+  getMenu(@Param('pointID') pointID: number, @Request() req) {
+    return this.menuPositionService.getMenu(pointID, req.user.id);
+  }
+
+  @Get('positions/:pointID/recipe/:positionID')
+  @UseGuards(JwtAuthGuard)
+  getRecipe(
+    @Param('positionID') positionID: number,
+    @Param('pointID') pointID: number,
+    @Request() req,
+  ) {
+    return this.menuPositionService.getRecipe(positionID, pointID, req.user.id);
+  }
+
+  @Get('positions/:pointID/info/:positionID')
+  @UseGuards(JwtAuthGuard)
+  getPositionInfo(
+    @Param('positionID') positionID: number,
+    @Param('pointID') pointID: number,
+    @Request() req,
+  ) {
+    return this.menuPositionService.findOne(positionID, pointID, req.user.id);
+  }
+
+  @Patch('positions/:pointID/update/:positionID')
+  @UseGuards(JwtAuthGuard)
+  @UsePipes(new ValidationPipe())
+  updatePosition(
+    @Param('positionID') positionID: number,
+    @Param('pointID') pointID: number,
+    @Request() req,
+    @Body() updatePositionDto: UpdatePositionDto,
+  ) {
+    return this.menuPositionService.update(
+      positionID,
+      pointID,
+      req.user.id,
+      updatePositionDto,
+    );
+  }
+
+  @Delete('positions/:pointID/delete/:positionID')
+  @UseGuards(JwtAuthGuard)
+  deletePosition(
+    @Param('positionID') positionID: number,
+    @Param('pointID') pointID: number,
+    @Request() req,
+  ) {
+    return this.menuPositionService.delete(positionID, pointID, req.user.id);
+  }
 }

@@ -16,7 +16,8 @@ export class Recipe {
   @Column('text', { array: true })
   stepsToReproduce: string[];
   @OneToOne(() => MenuPosition, (position) => position.recipe, {
-    onDelete: 'CASCADE',
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
   })
   @JoinColumn({ name: 'position_id' })
   menuPosition: MenuPosition;

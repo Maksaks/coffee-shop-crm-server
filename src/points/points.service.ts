@@ -49,6 +49,7 @@ export class PointsService {
         ingredients: true,
         orders: true,
         shifts: true,
+        menuPositions: true,
       },
     });
   }

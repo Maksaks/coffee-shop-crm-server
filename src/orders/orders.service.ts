@@ -10,7 +10,6 @@ import {
 import { PointsService } from 'src/points/points.service';
 import { Between, Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order, PaymentMethod } from './entities/orders.entity';
 
 @Injectable()
@@ -45,13 +44,6 @@ export class OrdersService {
     return await this.orderRepository.save(createOrderDto);
   }
 
-  async update(id: number, updateOrderDto: UpdateOrderDto) {
-    const existedOrder = await this.orderRepository.findOne({ where: { id } });
-    if (!existedOrder) {
-      return new BadRequestException(`Order with #${id} was not found`);
-    }
-    return await this.orderRepository.update(id, updateOrderDto);
-  }
   async findAll() {
     return await this.orderRepository.find({
       relations: { point: true, barista: true, menuPositions: true },

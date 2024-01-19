@@ -26,6 +26,7 @@ export class MenuPosition {
   price: number;
   @OneToOne(() => Recipe, (recipe) => recipe.menuPosition, {
     onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
   })
   @JoinColumn({ name: 'recipe_id' })
   recipe: Recipe;

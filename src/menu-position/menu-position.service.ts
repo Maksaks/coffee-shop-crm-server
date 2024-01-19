@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Point } from 'src/points/entities/points.entity';
 import { Recipe } from 'src/recipe/entities/recipe.entity';
 import { Repository } from 'typeorm';
 import { CreatePositionDto } from './dto/create-position.dto';
@@ -13,30 +14,79 @@ export class MenuPositionService {
     private readonly menuPositionRepository: Repository<MenuPosition>,
     @InjectRepository(Recipe)
     private readonly recipeRepository: Repository<Recipe>,
+    @InjectRepository(Point)
+    private readonly pointRepository: Repository<Point>,
   ) {}
-  async create(menuPositionCreateDto: CreatePositionDto) {
+  async create(
+    menuPositionCreateDto: CreatePositionDto,
+    pointID: number,
+    adminID: number,
+  ) {
     const existedPosition = await this.menuPositionRepository.findOne({
-      where: { name: menuPositionCreateDto.name },
+      where: { name: menuPositionCreateDto.name, point: { id: pointID } },
     });
     if (existedPosition) {
       return new BadRequestException(
         `Menu Position with name '${existedPosition.name}' has already existed`,
       );
     }
-    const newCategory = {
+    const existedPoint = await this.pointRepository.findOne({
+      where: {
+        admin: { id: adminID },
+        id: pointID,
+      },
+      relations: { ingredients: true },
+    });
+    if (!existedPoint) {
+      return new BadRequestException(`Point #${pointID} was not found`);
+    }
+    if (menuPositionCreateDto.ingredients.length) {
+      for (const ingredient of menuPositionCreateDto.ingredients) {
+        if (
+          !existedPoint.ingredients.find((item) => item.id === ingredient.id)
+        ) {
+          return new BadRequestException(
+            'Not all ingredients are existed on Point',
+          );
+        }
+      }
+    }
+
+    const recipe = await this.recipeRepository.save({
+      ingredients: menuPositionCreateDto.ingredients.length
+        ? menuPositionCreateDto.ingredients.map((item) => {
+            return { id: item.id };
+          })
+        : [],
+      stepsToReproduce: menuPositionCreateDto.stepsToReproduce.length
+        ? menuPositionCreateDto.stepsToReproduce
+        : [],
+    });
+
+    const newPosition = await this.menuPositionRepository.save({
       ...menuPositionCreateDto,
-    };
-    return await this.menuPositionRepository.save(newCategory);
+      point: { id: pointID },
+      recipe: recipe,
+    });
+    await this.recipeRepository.save({ ...recipe, menuPosition: newPosition });
+    return newPosition;
   }
-  async getMenu(pointID: number) {
-    return await this.menuPositionRepository.find({
-      where: { point: { id: pointID } },
+
+  async getMenu(pointID: number, adminID: number) {
+    const existedPoint = await this.menuPositionRepository.find({
+      where: { point: { id: pointID, admin: { id: adminID } } },
       relations: { category: true, recipe: true, discount: true },
     });
+    if (!existedPoint.length) {
+      return new BadRequestException(
+        `Any menu position on this point was not found`,
+      );
+    }
+    return existedPoint;
   }
-  async findOne(id: number) {
+  async findOne(id: number, pointID: number, adminID: number) {
     const existedPosition = await this.menuPositionRepository.findOne({
-      where: { id },
+      where: { id, point: { id: pointID, admin: { id: adminID } } },
     });
     if (!existedPosition) {
       return new BadRequestException(`Menu Position with #${id} was not found`);
@@ -46,34 +96,112 @@ export class MenuPositionService {
       relations: { category: true, recipe: true, discount: true },
     });
   }
-  async update(id: number, updatedMenuPositionDto: UpdatePositionDto) {
+  async update(
+    id: number,
+    pointID: number,
+    adminID: number,
+    updatedMenuPositionDto: UpdatePositionDto,
+  ) {
     const existedPosition = await this.menuPositionRepository.findOne({
-      where: { id },
+      where: { id, point: { id: pointID, admin: { id: adminID } } },
+      relations: { recipe: true },
     });
     if (!existedPosition) {
       return new BadRequestException(`Menu Position with #${id} was not found`);
     }
-    return await this.menuPositionRepository.update(id, updatedMenuPositionDto);
+    if (
+      !updatedMenuPositionDto.ingredients &&
+      !updatedMenuPositionDto.stepsToReproduce
+    ) {
+      return await this.menuPositionRepository.update(
+        id,
+        updatedMenuPositionDto,
+      );
+    }
+    const existedPoint = await this.pointRepository.findOne({
+      where: { id: pointID },
+      relations: { ingredients: true },
+    });
+    const recipe = await this.recipeRepository.findOne({
+      where: { id: existedPosition.recipe.id },
+      relations: { ingredients: true },
+    });
+
+    let ingredients;
+    if (updatedMenuPositionDto.ingredients) {
+      if (updatedMenuPositionDto.ingredients.length) {
+        for (const ingredient of recipe.ingredients) {
+          const ingredientFind = updatedMenuPositionDto.ingredients.find(
+            (item) => item.id == ingredient.id,
+          );
+          if (ingredientFind) {
+            updatedMenuPositionDto.ingredients =
+              updatedMenuPositionDto.ingredients.filter(
+                (item) => item.id != ingredientFind.id,
+              );
+          }
+        }
+
+        for (const ingredient of updatedMenuPositionDto.ingredients) {
+          if (
+            !existedPoint.ingredients.find((item) => item.id === ingredient.id)
+          ) {
+            return new BadRequestException(
+              'Not all ingredients are existed on Point',
+            );
+          }
+        }
+        ingredients = [
+          ...recipe.ingredients,
+          ...updatedMenuPositionDto.ingredients,
+        ];
+      } else {
+        ingredients = [];
+      }
+    } else {
+      ingredients = recipe.ingredients;
+    }
+
+    const updatedRecipe = {
+      ...recipe,
+      ingredients: ingredients,
+      stepsToReproduce: updatedMenuPositionDto.stepsToReproduce
+        ? !updatedMenuPositionDto.stepsToReproduce.length
+          ? []
+          : updatedMenuPositionDto.stepsToReproduce
+        : recipe.stepsToReproduce,
+    };
+    await this.recipeRepository.save(updatedRecipe);
+    return existedPosition;
   }
-  async delete(id: number) {
+  async delete(id: number, pointID: number, adminID: number) {
     const existedPosition = await this.menuPositionRepository.findOne({
-      where: { id },
+      where: { id, point: { id: pointID, admin: { id: adminID } } },
+      relations: { recipe: true },
     });
     if (!existedPosition) {
       return new BadRequestException(`Menu Position with #${id} was not found`);
     }
+    const recipe = await this.recipeRepository.findOne({
+      where: { id: existedPosition.recipe.id },
+      relations: { ingredients: true },
+    });
+    recipe.ingredients = [];
+    await this.recipeRepository.save(recipe);
+    await this.recipeRepository.delete(recipe.id);
     return await this.menuPositionRepository.delete(id);
   }
 
-  async getRecipe(id: number) {
+  async getRecipe(id: number, pointID: number, adminID: number) {
     const existedPosition = await this.menuPositionRepository.findOne({
-      where: { id },
+      where: { id, point: { id: pointID, admin: { id: adminID } } },
     });
     if (!existedPosition) {
       return new BadRequestException(`Menu Position with #${id} was not found`);
     }
     return await this.recipeRepository.findOne({
       where: { menuPosition: { id } },
+      relations: { ingredients: true },
     });
   }
 }

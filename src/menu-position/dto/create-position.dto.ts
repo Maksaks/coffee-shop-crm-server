@@ -1,5 +1,6 @@
 import { IsNotEmpty, IsOptional } from 'class-validator';
 import { Category } from 'src/categories/entities/category.entity';
+import { Ingredient } from 'src/ingredients/entities/ingredient.entity';
 
 export class CreatePositionDto {
   @IsNotEmpty()
@@ -10,4 +11,8 @@ export class CreatePositionDto {
   price: number;
   @IsOptional()
   category?: Category;
+  @IsOptional()
+  ingredients?: Ingredient[];
+  @IsOptional()
+  stepsToReproduce?: string[];
 }
