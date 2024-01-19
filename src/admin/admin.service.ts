@@ -45,13 +45,19 @@ export class AdminService {
   }
 
   async update(id: number, updateAdminDto: UpdateAdminDto) {
-    const existedAdmin = await this.adminRepository.find({
+    const existedAdmin = await this.adminRepository.findOne({
       where: { id },
     });
     if (!existedAdmin) {
       return new BadRequestException(
         `Admin with #${id} hasn\`t already existed`,
       );
+    }
+    if (
+      updateAdminDto.password &&
+      !(await argon2.verify(updateAdminDto.password, existedAdmin.password))
+    ) {
+      updateAdminDto.password = await argon2.hash(updateAdminDto.password);
     }
     return await this.adminRepository.update(id, updateAdminDto);
   }

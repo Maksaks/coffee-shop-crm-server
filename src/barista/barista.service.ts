@@ -86,6 +86,12 @@ export class BaristaService {
           `Barista with email ${updateBaristaDto.email}`,
         );
     }
+    if (
+      updateBaristaDto.password &&
+      !(await argon2.verify(updateBaristaDto.password, exsitedBarista.password))
+    ) {
+      updateBaristaDto.password = await argon2.hash(updateBaristaDto.password);
+    }
     return await this.baristaRepository.update(id, updateBaristaDto);
   }
 

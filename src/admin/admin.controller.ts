@@ -127,7 +127,7 @@ export class AdminController {
   }
   @Get('points/:id')
   getPoint(@Param('id') id: number) {
-    return this.pointService.findOne(id, 1);
+    return this.pointService.findOne(id);
   }
 
   @Patch('points/:id')
