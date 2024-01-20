@@ -18,6 +18,7 @@ import { UpdateBaristaDto } from 'src/barista/dto/update-barista.dto';
 import { CategoriesService } from 'src/categories/categories.service';
 import { CreateCategoryDto } from 'src/categories/dto/create-category.dto';
 import { UpdateCategoryDto } from 'src/categories/dto/update-category.dto';
+import { getMonthBefore } from 'src/helpers/GetingDate.helper';
 import { CreateIngredientDto } from 'src/ingredients/dto/create-ingredient.dto';
 import { GetByNameIngredientDto } from 'src/ingredients/dto/get-by-name-ingredient.dto';
 import { UpdateIngredientDto } from 'src/ingredients/dto/update-ingredient.dto';
@@ -28,7 +29,8 @@ import { MenuPositionService } from 'src/menu-position/menu-position.service';
 import { CreatePointDto } from 'src/points/dto/create-point.dto';
 import { UpdatePointDto } from 'src/points/dto/update-point.dto';
 import { PointsService } from 'src/points/points.service';
-import { RecipeService } from 'src/recipe/recipe.service';
+import { CreateShiftDto } from 'src/shifts/dto/create-shift.dto';
+import { ShiftsService } from 'src/shifts/shifts.service';
 import { AdminService } from './admin.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
 
@@ -41,7 +43,7 @@ export class AdminController {
     private readonly pointService: PointsService,
     private readonly ingredientService: IngredientsService,
     private readonly menuPositionService: MenuPositionService,
-    private readonly recipesService: RecipeService,
+    private readonly shiftsService: ShiftsService,
   ) {}
 
   @Post()
@@ -315,5 +317,48 @@ export class AdminController {
     @Request() req,
   ) {
     return this.menuPositionService.delete(positionID, pointID, req.user.id);
+  }
+
+  @Post('shifts/:baristaID')
+  @UsePipes(new ValidationPipe())
+  @UseGuards(JwtAuthGuard)
+  createShift(
+    @Body() createShiftDto: CreateShiftDto,
+    @Param('baristaID') baristaID: number,
+    @Request() req,
+  ) {
+    return this.shiftsService.create(createShiftDto, baristaID, req.user.id);
+  }
+
+  @Get('shifts/point/:pointID')
+  @UseGuards(JwtAuthGuard)
+  getShiftsByPoint(@Param('pointID') pointID: number, @Request() req) {
+    return this.shiftsService.getAllShiftsByPoint(pointID, req.user.id);
+  }
+
+  @Get('shifts/barista/:baristaID')
+  @UseGuards(JwtAuthGuard)
+  getShiftsByBarista(@Param('baristaID') baristaID: number, @Request() req) {
+    return this.shiftsService.getAllShiftsByBarista(baristaID, req.user.id);
+  }
+
+  @Get('shifts/statistics/:baristaID')
+  @UseGuards(JwtAuthGuard)
+  getStatistics(@Param('baristaID') baristaID: number, @Request() req) {
+    return this.shiftsService.getBaristaSalaryAndCountOfShiftsForPeriod(
+      req.user.id,
+      baristaID,
+      getMonthBefore(),
+      new Date(),
+    );
+  }
+
+  @Get('shifts/:baristaID/state')
+  @UseGuards(JwtAuthGuard)
+  getCurrentBaristaState(
+    @Param('baristaID') baristaID: number,
+    @Request() req,
+  ) {
+    return this.shiftsService.getCurrentStatus(baristaID, req.user.id);
   }
 }

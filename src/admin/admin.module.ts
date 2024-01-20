@@ -6,6 +6,7 @@ import { IngredientsModule } from 'src/ingredients/ingredients.module';
 import { MenuPositionModule } from 'src/menu-position/menu-position.module';
 import { PointModule } from 'src/points/points.module';
 import { RecipesModule } from 'src/recipe/recipe.module';
+import { ShiftsModule } from 'src/shifts/shifts.module';
 import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 import { Admin } from './entities/admin.entity';
@@ -19,6 +20,7 @@ import { Admin } from './entities/admin.entity';
     IngredientsModule,
     RecipesModule,
     MenuPositionModule,
+    ShiftsModule,
   ],
   controllers: [AdminController],
   providers: [AdminService],

@@ -1,12 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DatesEnum } from 'src/enums/DatesEnum.enum';
-import {
-  getMonthBefore,
-  getTodayMidnight,
-  getWeekBefore,
-  getYearBefore,
-} from 'src/helpers/GetingDate.helper';
+import { getTodayMidnight } from 'src/helpers/GetingDate.helper';
 import { PointsService } from 'src/points/points.service';
 import { Between, Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -65,85 +59,43 @@ export class OrdersService {
     });
   }
 
-  async findByBaristaIDAndForPeriod(baristaID: number, period: DatesEnum) {
-    if (period === DatesEnum.CurrentDay) {
-      const existedOrdersForBaristaForCurrentDay =
-        await this.orderRepository.find({
-          where: {
-            barista: { id: baristaID },
-            createdAt: Between(getTodayMidnight(), new Date()),
-          },
-          relations: {
-            menuPositions: true,
-            point: true,
-            barista: true,
-          },
-        });
-      if (existedOrdersForBaristaForCurrentDay.length) {
-        return new BadRequestException(
-          `Orders for barista #${baristaID} during today were not found`,
-        );
-      }
-      return existedOrdersForBaristaForCurrentDay;
+  async findByBaristaIDAndForPeriod(
+    baristaID: number,
+    periodFrom: Date,
+    periodTo: Date,
+  ) {
+    const existedOrdersForBarista =
+      periodFrom < periodTo
+        ? await this.orderRepository.find({
+            where: {
+              barista: { id: baristaID },
+              createdAt: Between(periodFrom, periodTo),
+            },
+            relations: {
+              menuPositions: true,
+              point: true,
+              barista: true,
+            },
+          })
+        : await this.orderRepository.find({
+            where: {
+              barista: { id: baristaID },
+              createdAt: Between(periodTo, periodFrom),
+            },
+            relations: {
+              menuPositions: true,
+              point: true,
+              barista: true,
+            },
+          });
+    if (existedOrdersForBarista.length) {
+      return new BadRequestException(
+        `Orders for barista #${baristaID} during selected period were not found`,
+      );
     }
-    if (period === DatesEnum.CurrentWeek) {
-      const existedOrdersForBaristaForCurrentWeek =
-        await this.orderRepository.find({
-          where: {
-            barista: { id: baristaID },
-            createdAt: Between(getWeekBefore(), new Date()),
-          },
-          relations: {
-            menuPositions: true,
-            point: true,
-          },
-        });
-      if (existedOrdersForBaristaForCurrentWeek.length) {
-        return new BadRequestException(
-          `Orders for barista #${baristaID} during last week were not found`,
-        );
-      }
-      return existedOrdersForBaristaForCurrentWeek;
-    }
-    if (period === DatesEnum.CurrentMonth) {
-      const existedOrdersForBaristaForCurrentMonth =
-        await this.orderRepository.find({
-          where: {
-            barista: { id: baristaID },
-            createdAt: Between(getMonthBefore(), new Date()),
-          },
-          relations: {
-            menuPositions: true,
-            point: true,
-          },
-        });
-      if (existedOrdersForBaristaForCurrentMonth.length) {
-        return new BadRequestException(
-          `Orders for barista #${baristaID} during last month were not found`,
-        );
-      }
-      return existedOrdersForBaristaForCurrentMonth;
-    }
-    if (period === DatesEnum.CurrentYear) {
-      const existedOrdersForBaristaForCurrentYear =
-        await this.orderRepository.find({
-          where: {
-            barista: { id: baristaID },
-            createdAt: Between(getYearBefore(), new Date()),
-          },
-          relations: {
-            menuPositions: true,
-            point: true,
-          },
-        });
-      if (existedOrdersForBaristaForCurrentYear.length) {
-        return new BadRequestException(
-          `Orders for barista #${baristaID} during last year were not found`,
-        );
-      }
-      return existedOrdersForBaristaForCurrentYear;
-    }
+    return existedOrdersForBarista;
   }
+
   async findOne(id: number) {
     const existedOrder = await this.orderRepository.findOne({ where: { id } });
     if (!existedOrder) {

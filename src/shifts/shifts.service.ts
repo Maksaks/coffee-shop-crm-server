@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DatesEnum } from 'src/enums/DatesEnum.enum';
 import { getHourDifference } from 'src/helpers/GetHourDifference.helper';
 import { Order } from 'src/orders/entities/orders.entity';
 import { OrdersService } from 'src/orders/orders.service';
@@ -15,39 +14,57 @@ export class ShiftsService {
     private readonly shiftRepository: Repository<Shift>,
     private readonly orderService: OrdersService,
   ) {}
-  async create(createShiftDto: CreateShiftDto, id: number) {
-    if (createShiftDto.status === ShiftStatus.StartOfWork) {
+  async create(
+    createShiftDto: CreateShiftDto,
+    baristaId: number,
+    adminID: number,
+  ) {
+    if (createShiftDto.status === ShiftStatus.StartOfWork.toString()) {
       const lastShift = await this.shiftRepository.find({
         where: {
-          barista: { id },
+          barista: { id: baristaId },
+          point: { admin: { id: adminID } },
         },
         order: { id: 'DESC' },
         take: 1,
       });
-      if (lastShift.length || lastShift[0].status === ShiftStatus.EndOfWork) {
+      if (
+        !lastShift.length ||
+        lastShift[0].status === ShiftStatus.EndOfWork.toString()
+      ) {
         return await this.shiftRepository.save({
           ...createShiftDto,
           baristaSalary: 0,
+          barista: { id: baristaId },
         });
       } else return new BadRequestException('Last shift hasn`t been ended');
-    } else if (createShiftDto.status === ShiftStatus.EndOfWork) {
+    } else if (createShiftDto.status === ShiftStatus.EndOfWork.toString()) {
       const lastShift = await this.shiftRepository.find({
         where: {
-          barista: { id },
+          barista: { id: baristaId },
+          point: { admin: { id: adminID } },
         },
         order: { id: 'DESC' },
         take: 1,
       });
-      if (lastShift.length)
+      if (!lastShift.length)
         return new BadRequestException(
           'You can`t end of shift until you start it',
         );
-      if (lastShift[0].status === ShiftStatus.StartOfWork) {
+      if (lastShift[0].status === ShiftStatus.StartOfWork.toString()) {
         const lastDayOrders =
           (await this.orderService.findByBaristaIDAndForPeriod(
-            id,
-            DatesEnum.CurrentDay,
+            baristaId,
+            lastShift[0].time,
+            new Date(),
           )) as Order[];
+        if (!lastDayOrders.length) {
+          return await this.shiftRepository.save({
+            ...createShiftDto,
+            baristaSalary: 0,
+            barista: { id: baristaId },
+          });
+        }
         const baristaSalaryFromPercent = lastDayOrders.reduce((acc, cur) => {
           const salaryFromPercent =
             (cur.totalAmount * cur.barista.percentFromEarnings) / 100;
@@ -62,6 +79,7 @@ export class ShiftsService {
         return await this.shiftRepository.save({
           ...createShiftDto,
           baristaSalary: totalBaristaSalary,
+          barista: { id: baristaId },
         });
       } else
         return new BadRequestException(
@@ -69,31 +87,29 @@ export class ShiftsService {
         );
     }
   }
-  async getAllShiftsByBarista(id: number) {
+  async getAllShiftsByBarista(id: number, adminID: number) {
     const shifts = await this.shiftRepository.find({
-      where: { barista: { id } },
+      where: { barista: { id, admin: { id: adminID } } },
       relations: {
         point: true,
       },
     });
-    if (shifts.length) {
+    if (!shifts.length) {
       return new BadRequestException(
         `Shifts for Barista with #${id} weren\`t found`,
       );
     }
     return shifts;
   }
-  async getAllShiftsByPoint(id: number) {
+  async getAllShiftsByPoint(id: number, adminID: number) {
     const shifts = await this.shiftRepository.find({
-      where: { point: { id } },
+      where: { point: { id, admin: { id: adminID } } },
       relations: {
         barista: true,
       },
     });
-    if (shifts.length) {
-      return new BadRequestException(
-        `Shifts for Barista with #${id} weren\`t found`,
-      );
+    if (!shifts.length) {
+      return new BadRequestException(`Shifts for Point #${id} weren\`t found`);
     }
     return shifts;
   }
@@ -106,21 +122,26 @@ export class ShiftsService {
         point: true,
       },
     });
-    if (shifts.length) {
+    if (!shifts.length) {
       return new BadRequestException(`Shifts were not found`);
     }
     return shifts;
   }
 
-  async getCurrentStatus(baristaID: number) {
+  async getCurrentStatus(baristaID: number, adminID: number) {
     const lastShift = await this.shiftRepository.find({
       where: {
-        barista: { id: baristaID },
+        barista: { id: baristaID, admin: { id: adminID } },
       },
       order: { id: 'DESC' },
       take: 1,
     });
-    if (lastShift.length || lastShift[0].status === ShiftStatus.EndOfWork) {
+    if (!lastShift.length) {
+      return new BadRequestException(
+        `First shift of barista #${baristaID} has not started yet`,
+      );
+    }
+    if (lastShift[0].status === ShiftStatus.EndOfWork) {
       return { status: ShiftStatus.EndOfWork };
     } else {
       return { status: ShiftStatus.StartOfWork };
@@ -153,7 +174,7 @@ export class ShiftsService {
         },
       });
     }
-    if (shifts.length) {
+    if (!shifts.length) {
       return new BadRequestException(`Shifts were not found`);
     }
     const totalBaristaSalary = shifts.reduce(
@@ -198,7 +219,7 @@ export class ShiftsService {
         baristaFullName: shift.barista.name + ' ' + shift.barista.surname,
       };
     });
-    if (shifts.length) {
+    if (!shifts.length) {
       return new BadRequestException(`Shifts were not found`);
     }
     const totalData = [];
