@@ -29,6 +29,9 @@ import { MenuPositionService } from 'src/menu-position/menu-position.service';
 import { CreatePointDto } from 'src/points/dto/create-point.dto';
 import { UpdatePointDto } from 'src/points/dto/update-point.dto';
 import { PointsService } from 'src/points/points.service';
+import { CreateDiscountDto } from 'src/position-discount/dto/create-discount.dto';
+import { UpdateDiscountDto } from 'src/position-discount/dto/update-discount.dto';
+import { PositionDiscountService } from 'src/position-discount/position-discount.service';
 import { CreateShiftDto } from 'src/shifts/dto/create-shift.dto';
 import { ShiftsService } from 'src/shifts/shifts.service';
 import { AdminService } from './admin.service';
@@ -44,6 +47,7 @@ export class AdminController {
     private readonly ingredientService: IngredientsService,
     private readonly menuPositionService: MenuPositionService,
     private readonly shiftsService: ShiftsService,
+    private readonly discountsService: PositionDiscountService,
   ) {}
 
   @Post()
@@ -360,5 +364,51 @@ export class AdminController {
     @Request() req,
   ) {
     return this.shiftsService.getCurrentStatus(baristaID, req.user.id);
+  }
+
+  @Post('discounts/:positionID')
+  @UsePipes(new ValidationPipe())
+  @UseGuards(JwtAuthGuard)
+  createDiscount(
+    @Body() createDiscountDto: CreateDiscountDto,
+    @Param('positionID') positionID: number,
+    @Request() req,
+  ) {
+    return this.discountsService.create(
+      createDiscountDto,
+      positionID,
+      req.user.id,
+    );
+  }
+  @Get('discounts')
+  @UseGuards(JwtAuthGuard)
+  getDiscountAllDiscount(@Request() req) {
+    return this.discountsService.findAll(req.user.id);
+  }
+  @Get('discounts/point/:pointID')
+  @UseGuards(JwtAuthGuard)
+  getDiscountsOnPoint(@Param('pointID') pointID: number, @Request() req) {
+    return this.discountsService.findDiscountByPointID(pointID, req.user.id);
+  }
+
+  @Patch('discounts/:positionID')
+  @UseGuards(JwtAuthGuard)
+  @UsePipes(new ValidationPipe())
+  updateDiscount(
+    @Param('positionID') positionID: number,
+    @Request() req,
+    @Body() updateDiscountDto: UpdateDiscountDto,
+  ) {
+    return this.discountsService.update(
+      positionID,
+      updateDiscountDto,
+      req.user.id,
+    );
+  }
+
+  @Delete('discounts/:positionID')
+  @UseGuards(JwtAuthGuard)
+  deleteDiscount(@Param('positionID') positionID: number, @Request() req) {
+    return this.discountsService.remove(positionID, req.user.id);
   }
 }

@@ -36,7 +36,7 @@ export class MenuPosition {
   @JoinTable()
   orders: Order[];
   @OneToOne(() => PositionDiscount, (discount) => discount.menuPosition, {
-    onDelete: 'CASCADE',
+    onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'discount_id' })
   discount: PositionDiscount;

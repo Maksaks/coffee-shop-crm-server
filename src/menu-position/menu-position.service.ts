@@ -73,16 +73,22 @@ export class MenuPositionService {
   }
 
   async getMenu(pointID: number, adminID: number) {
-    const existedPoint = await this.menuPositionRepository.find({
+    let existedMenuPositions = await this.menuPositionRepository.find({
       where: { point: { id: pointID, admin: { id: adminID } } },
       relations: { category: true, recipe: true, discount: true },
     });
-    if (!existedPoint.length) {
+    if (!existedMenuPositions.length) {
       return new BadRequestException(
         `Any menu position on this point was not found`,
       );
     }
-    return existedPoint;
+    existedMenuPositions = existedMenuPositions.map((pos) => {
+      if (pos.discount && pos.discount.endAt < new Date()) {
+        pos.discount = null;
+      }
+      return pos;
+    });
+    return existedMenuPositions;
   }
   async findOne(id: number, pointID: number, adminID: number) {
     const existedPosition = await this.menuPositionRepository.findOne({
