@@ -11,6 +11,7 @@ import { IngredientsModule } from './ingredients/ingredients.module';
 import { IngredientsService } from './ingredients/ingredients.service';
 import { MenuPositionModule } from './menu-position/menu-position.module';
 import { MenuPositionService } from './menu-position/menu-position.service';
+import { OrderPositionModule } from './order-position/order-position.module';
 import { OrdersModule } from './orders/orders.module';
 import { OrdersService } from './orders/orders.service';
 import { PointModule } from './points/points.module';
@@ -49,6 +50,7 @@ import { StatisticsModule } from './statistics/statistics.module';
     CategoriesModule,
     IngredientsModule,
     OrdersModule,
+    OrderPositionModule,
     PointModule,
     RecipesModule,
     ShiftsModule,

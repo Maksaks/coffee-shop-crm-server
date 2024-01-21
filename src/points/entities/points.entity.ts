@@ -40,9 +40,13 @@ export class Point {
   })
   @JoinColumn({ name: 'ingredients_id' })
   ingredients: Ingredient[];
-  @ManyToOne(() => Admin, (admin) => admin.points, { onDelete: 'SET NULL' })
+  @ManyToOne(() => Admin, (admin) => admin.points, {
+    onDelete: 'SET NULL',
+  })
   admin: Admin;
-  @OneToMany(() => Shift, (shift) => shift.point, { onDelete: 'SET NULL' })
+  @OneToMany(() => Shift, (shift) => shift.point, {
+    onDelete: 'SET NULL',
+  })
   shifts: Shift[];
   @OneToMany(() => MenuPosition, (position) => position.point, {
     onDelete: 'CASCADE',

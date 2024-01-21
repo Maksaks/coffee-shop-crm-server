@@ -41,10 +41,16 @@ export class Barista {
   })
   @JoinTable()
   points: Point[];
-  @OneToMany(() => Shift, (shift) => shift.barista, { onDelete: 'SET NULL' })
+  @OneToMany(() => Shift, (shift) => shift.barista, {
+    onDelete: 'SET NULL',
+  })
   shifts: Shift[];
-  @OneToMany(() => Order, (order) => order.barista, { onDelete: 'SET NULL' })
+  @OneToMany(() => Order, (order) => order.barista, {
+    onDelete: 'SET NULL',
+  })
   orders: Order[];
-  @ManyToOne(() => Admin, (admin) => admin.baristas, { onDelete: 'SET NULL' })
+  @ManyToOne(() => Admin, (admin) => admin.baristas, {
+    onDelete: 'SET NULL',
+  })
   admin: Admin;
 }

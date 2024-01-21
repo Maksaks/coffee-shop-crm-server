@@ -1,5 +1,5 @@
 import { Category } from 'src/categories/entities/category.entity';
-import { Order } from 'src/orders/entities/orders.entity';
+import { OrderPosition } from 'src/order-position/entities/order-position.entity';
 import { Point } from 'src/points/entities/points.entity';
 import { PositionDiscount } from 'src/position-discount/entities/position-discount.entity';
 import { Recipe } from 'src/recipe/entities/recipe.entity';
@@ -8,8 +8,8 @@ import {
   Entity,
   JoinColumn,
   JoinTable,
-  ManyToMany,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -30,11 +30,11 @@ export class MenuPosition {
   })
   @JoinColumn({ name: 'recipe_id' })
   recipe: Recipe;
-  @ManyToMany(() => Order, (order) => order.menuPositions, {
+  @OneToMany(() => OrderPosition, (orderPos) => orderPos.menuPosition, {
     onDelete: 'SET NULL',
   })
   @JoinTable()
-  orders: Order[];
+  orderPositions: OrderPosition[];
   @OneToOne(() => PositionDiscount, (discount) => discount.menuPosition, {
     onDelete: 'SET NULL',
   })

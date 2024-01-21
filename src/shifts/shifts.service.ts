@@ -3,8 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { getHourDifference } from 'src/helpers/GetHourDifference.helper';
 import { Order } from 'src/orders/entities/orders.entity';
 import { OrdersService } from 'src/orders/orders.service';
+import { Point } from 'src/points/entities/points.entity';
 import { Between, Repository } from 'typeorm';
-import { CreateShiftDto } from './dto/create-shift.dto';
 import { Shift, ShiftStatus } from './entities/shift.entity';
 
 @Injectable()
@@ -12,14 +12,28 @@ export class ShiftsService {
   constructor(
     @InjectRepository(Shift)
     private readonly shiftRepository: Repository<Shift>,
+    @InjectRepository(Point)
+    private readonly pointRepository: Repository<Point>,
     private readonly orderService: OrdersService,
   ) {}
   async create(
-    createShiftDto: CreateShiftDto,
+    shiftStatus: ShiftStatus,
+    pointID: number,
     baristaId: number,
     adminID: number,
   ) {
-    if (createShiftDto.status === ShiftStatus.StartOfWork.toString()) {
+    const isBaristaOnPoint = (
+      await this.pointRepository.findOne({
+        where: { id: pointID, admin: { id: adminID } },
+        relations: { barista: true },
+      })
+    ).barista.find((item) => item.id === baristaId);
+    if (!isBaristaOnPoint) {
+      return new BadRequestException(
+        `Barista #${baristaId} does not have access to this point #${pointID}`,
+      );
+    }
+    if (shiftStatus.toString() === ShiftStatus.StartOfWork.toString()) {
       const lastShift = await this.shiftRepository.find({
         where: {
           barista: { id: baristaId },
@@ -33,12 +47,13 @@ export class ShiftsService {
         lastShift[0].status === ShiftStatus.EndOfWork.toString()
       ) {
         return await this.shiftRepository.save({
-          ...createShiftDto,
+          status: shiftStatus,
+          point: { id: pointID },
           baristaSalary: 0,
           barista: { id: baristaId },
         });
       } else return new BadRequestException('Last shift hasn`t been ended');
-    } else if (createShiftDto.status === ShiftStatus.EndOfWork.toString()) {
+    } else if (shiftStatus.toString() === ShiftStatus.EndOfWork.toString()) {
       const lastShift = await this.shiftRepository.find({
         where: {
           barista: { id: baristaId },
@@ -60,7 +75,8 @@ export class ShiftsService {
           )) as Order[];
         if (!lastDayOrders.length) {
           return await this.shiftRepository.save({
-            ...createShiftDto,
+            status: shiftStatus,
+            point: { id: pointID },
             baristaSalary: 0,
             barista: { id: baristaId },
           });
@@ -77,7 +93,8 @@ export class ShiftsService {
           lastDayOrders[0].barista.fixedHourRate *
             getHourDifference(timeStartShift, timeEndShift);
         return await this.shiftRepository.save({
-          ...createShiftDto,
+          status: shiftStatus,
+          point: { id: pointID },
           baristaSalary: totalBaristaSalary,
           barista: { id: baristaId },
         });
@@ -135,6 +152,7 @@ export class ShiftsService {
       },
       order: { id: 'DESC' },
       take: 1,
+      relations: { point: true },
     });
     if (!lastShift.length) {
       return new BadRequestException(
@@ -144,7 +162,7 @@ export class ShiftsService {
     if (lastShift[0].status === ShiftStatus.EndOfWork) {
       return { status: ShiftStatus.EndOfWork };
     } else {
-      return { status: ShiftStatus.StartOfWork };
+      return { status: ShiftStatus.StartOfWork, point: lastShift[0].point };
     }
   }
 

@@ -27,6 +27,8 @@ export class Shift {
   barista: Barista;
   @Column()
   baristaSalary: number;
-  @ManyToOne(() => Point, (point) => point.shifts, { onDelete: 'SET NULL' })
+  @ManyToOne(() => Point, (point) => point.shifts, {
+    onDelete: 'SET NULL',
+  })
   point: Point;
 }

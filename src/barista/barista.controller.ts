@@ -1,7 +1,19 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Request,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CreateOrderDto } from 'src/orders/dto/create-order.dto';
 import { OrdersService } from 'src/orders/orders.service';
+import { ShiftStatus } from 'src/shifts/entities/shift.entity';
+import { ShiftsService } from 'src/shifts/shifts.service';
 import { BaristaService } from './barista.service';
 
 @Controller('barista')
@@ -9,10 +21,40 @@ export class BaristaController {
   constructor(
     private readonly baristaService: BaristaService,
     private readonly orderService: OrdersService,
+    private readonly shiftService: ShiftsService,
   ) {}
   @Post('orders')
   @UseGuards(JwtAuthGuard)
-  createOrder(@Body() createOrderDto: CreateOrderDto) {
-    return this.orderService.create(createOrderDto);
+  @UsePipes(new ValidationPipe())
+  createOrder(@Body() createOrderDto: CreateOrderDto, @Request() req) {
+    return this.orderService.create(createOrderDto, req.user.id);
+  }
+
+  @Get('orders/:orderID/ready')
+  @UseGuards(JwtAuthGuard)
+  completeOrder(@Param('orderID') orderID: number, @Request() req) {
+    return this.orderService.completeOrder(orderID, req.user.id);
+  }
+
+  @Get('shift/start/:pointID')
+  @UseGuards(JwtAuthGuard)
+  startShift(@Param('pointID') pointID: number, @Request() req) {
+    return this.shiftService.create(
+      ShiftStatus.StartOfWork,
+      pointID,
+      req.user.id,
+      req.user.admin.id,
+    );
+  }
+
+  @Get('shift/end/:pointID')
+  @UseGuards(JwtAuthGuard)
+  endShift(@Param('pointID') pointID: number, @Request() req) {
+    return this.shiftService.create(
+      ShiftStatus.EndOfWork,
+      pointID,
+      req.user.id,
+      req.user.admin.id,
+    );
   }
 }

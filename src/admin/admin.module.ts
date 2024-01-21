@@ -4,6 +4,8 @@ import { BaristaModule } from 'src/barista/barista.module';
 import { CategoriesModule } from 'src/categories/categories.module';
 import { IngredientsModule } from 'src/ingredients/ingredients.module';
 import { MenuPositionModule } from 'src/menu-position/menu-position.module';
+import { OrderPositionModule } from 'src/order-position/order-position.module';
+import { OrdersModule } from 'src/orders/orders.module';
 import { PointModule } from 'src/points/points.module';
 import { DiscountModule } from 'src/position-discount/discount.module';
 import { RecipesModule } from 'src/recipe/recipe.module';
@@ -23,6 +25,8 @@ import { Admin } from './entities/admin.entity';
     MenuPositionModule,
     ShiftsModule,
     DiscountModule,
+    OrdersModule,
+    OrderPositionModule,
   ],
   controllers: [AdminController],
   providers: [AdminService],

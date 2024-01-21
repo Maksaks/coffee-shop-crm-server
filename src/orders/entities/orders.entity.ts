@@ -1,13 +1,13 @@
 import { Barista } from 'src/barista/entities/barista.entity';
-import { MenuPosition } from 'src/menu-position/entities/menu-position.entity';
+import { OrderPosition } from 'src/order-position/entities/order-position.entity';
 import { Point } from 'src/points/entities/points.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
-  ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -47,8 +47,8 @@ export class Order {
   })
   @JoinColumn({ name: 'point_id' })
   point: Point;
-  @ManyToMany(() => MenuPosition, (position) => position.orders, {
+  @OneToMany(() => OrderPosition, (orderPos) => orderPos.order, {
     onDelete: 'SET NULL',
   })
-  menuPositions: MenuPosition[];
+  orderList: OrderPosition[];
 }

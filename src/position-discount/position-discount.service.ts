@@ -45,7 +45,6 @@ export class PositionDiscountService {
       ...createDiscountDto,
       menuPosition: existedMenuPosition,
     });
-    console.log(newDiscount);
     await this.menuPositionRepository.save({
       ...existedMenuPosition,
       discount: newDiscount,

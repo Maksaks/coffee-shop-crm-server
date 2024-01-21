@@ -1,6 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MenuPosition } from 'src/menu-position/entities/menu-position.entity';
+import { Ingredient } from 'src/ingredients/entities/ingredient.entity';
+import { OrderPosition } from 'src/order-position/entities/order-position.entity';
+import { Recipe } from 'src/recipe/entities/recipe.entity';
 import { Repository } from 'typeorm';
 import { CreatePointDto } from './dto/create-point.dto';
 import { UpdatePointDto } from './dto/update-point.dto';
@@ -11,6 +13,10 @@ export class PointsService {
   constructor(
     @InjectRepository(Point)
     private readonly pointRepository: Repository<Point>,
+    @InjectRepository(Recipe)
+    private readonly recipeRepository: Repository<Recipe>,
+    @InjectRepository(Ingredient)
+    private readonly ingredientRepository: Repository<Ingredient>,
   ) {}
   async create(adminID: number, createPointDto: CreatePointDto) {
     const existedPoint = await this.pointRepository.findOne({
@@ -68,6 +74,7 @@ export class PointsService {
         ingredients: true,
         orders: true,
         shifts: true,
+        menuPositions: true,
       },
     });
   }
@@ -128,21 +135,39 @@ export class PointsService {
     return await this.pointRepository.save(existedPoint);
   }
 
-  async updateIngredientsOnPoint(pointID: number, positions: MenuPosition[]) {
-    const existedPoint = await this.pointRepository.findOne({
-      where: { id: pointID },
-      relations: { ingredients: true },
+  async updateIngredientsOnPoint(pointID: number, positions: OrderPosition[]) {
+    let existedPointIngredients = await this.ingredientRepository.find({
+      where: { point: { id: pointID } },
     });
-    if (!existedPoint) {
-      return new BadRequestException(`Point #${pointID} was not found`);
+    if (!existedPointIngredients) {
+      return new BadRequestException(
+        `Ingredients on point #${pointID} was not found`,
+      );
     }
-    for (const position of positions) {
-      const ingredients = position.recipe.ingredients;
-      for (const ingredient of ingredients) {
-        const indexOfIngredient = existedPoint.ingredients.indexOf(ingredient);
-        existedPoint.ingredients[indexOfIngredient].quantity -= 1;
-      }
+    const allPositionsID = positions.map((item) => item.menuPosition.id);
+    const allRecipesOnPoint = await this.recipeRepository.find({
+      where: { menuPosition: { point: { id: pointID } } },
+      relations: { ingredients: true, menuPosition: true },
+    });
+    const menuPositionRecipes = allRecipesOnPoint.filter((item) =>
+      allPositionsID.includes(item.menuPosition.id),
+    );
+    for (const recipe of menuPositionRecipes) {
+      const ingredientsID = recipe.ingredients.map((item) => item.id);
+      existedPointIngredients = existedPointIngredients.map((item) => {
+        if (ingredientsID.includes(item.id)) {
+          if (item.quantity <= 0) {
+            throw new BadRequestException(
+              `Point #${pointID} has not got enough ingredients`,
+            );
+          }
+          item.quantity -= positions.find(
+            (item) => item.menuPosition.id === recipe.menuPosition.id,
+          ).quantity;
+          return item;
+        } else return item;
+      });
     }
-    this.pointRepository.save(existedPoint);
+    return await this.ingredientRepository.save(existedPointIngredients);
   }
 }

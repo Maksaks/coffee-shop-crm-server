@@ -207,7 +207,7 @@ export class MenuPositionService {
     }
     return await this.recipeRepository.findOne({
       where: { menuPosition: { id } },
-      relations: { ingredients: true },
+      relations: { ingredients: true, menuPosition: true },
     });
   }
 }

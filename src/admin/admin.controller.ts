@@ -26,13 +26,15 @@ import { IngredientsService } from 'src/ingredients/ingredients.service';
 import { CreatePositionDto } from 'src/menu-position/dto/create-position.dto';
 import { UpdatePositionDto } from 'src/menu-position/dto/update-position.dto';
 import { MenuPositionService } from 'src/menu-position/menu-position.service';
+import { OrderPositionService } from 'src/order-position/order-position.service';
+import { GetOrderForPeriodDto } from 'src/orders/dto/get-order-for-period.dto';
+import { OrdersService } from 'src/orders/orders.service';
 import { CreatePointDto } from 'src/points/dto/create-point.dto';
 import { UpdatePointDto } from 'src/points/dto/update-point.dto';
 import { PointsService } from 'src/points/points.service';
 import { CreateDiscountDto } from 'src/position-discount/dto/create-discount.dto';
 import { UpdateDiscountDto } from 'src/position-discount/dto/update-discount.dto';
 import { PositionDiscountService } from 'src/position-discount/position-discount.service';
-import { CreateShiftDto } from 'src/shifts/dto/create-shift.dto';
 import { ShiftsService } from 'src/shifts/shifts.service';
 import { AdminService } from './admin.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
@@ -48,6 +50,8 @@ export class AdminController {
     private readonly menuPositionService: MenuPositionService,
     private readonly shiftsService: ShiftsService,
     private readonly discountsService: PositionDiscountService,
+    private readonly ordersService: OrdersService,
+    private readonly orderPositionService: OrderPositionService,
   ) {}
 
   @Post()
@@ -323,17 +327,6 @@ export class AdminController {
     return this.menuPositionService.delete(positionID, pointID, req.user.id);
   }
 
-  @Post('shifts/:baristaID')
-  @UsePipes(new ValidationPipe())
-  @UseGuards(JwtAuthGuard)
-  createShift(
-    @Body() createShiftDto: CreateShiftDto,
-    @Param('baristaID') baristaID: number,
-    @Request() req,
-  ) {
-    return this.shiftsService.create(createShiftDto, baristaID, req.user.id);
-  }
-
   @Get('shifts/point/:pointID')
   @UseGuards(JwtAuthGuard)
   getShiftsByPoint(@Param('pointID') pointID: number, @Request() req) {
@@ -410,5 +403,61 @@ export class AdminController {
   @UseGuards(JwtAuthGuard)
   deleteDiscount(@Param('positionID') positionID: number, @Request() req) {
     return this.discountsService.remove(positionID, req.user.id);
+  }
+
+  @Get('orders/:orderID/list')
+  @UseGuards(JwtAuthGuard)
+  getOrderPositionList(@Param('orderID') orderID: number, @Request() req) {
+    return this.orderPositionService.getOrderList(orderID, req.user.id);
+  }
+
+  @Get('orders')
+  @UseGuards(JwtAuthGuard)
+  getAllOrders(@Request() req) {
+    return this.ordersService.findAll(req.user.id);
+  }
+
+  @Get('orders/:pointID')
+  @UseGuards(JwtAuthGuard)
+  getOrdersByPoint(@Param('pointID') pointID: number, @Request() req) {
+    return this.ordersService.findByPointId(pointID, req.user.id);
+  }
+
+  @Get('orders/byBarista/:baristaID')
+  @UseGuards(JwtAuthGuard)
+  getOrdersForPeriodByBarista(
+    @Param('baristaID') baristaID: number,
+    @Request() req,
+    @Body() getOrderForPeriodDto: GetOrderForPeriodDto,
+  ) {
+    return this.ordersService.findByBaristaIDAndForPeriod(
+      baristaID,
+      getOrderForPeriodDto.from,
+      getOrderForPeriodDto.to,
+    );
+  }
+
+  @Get('orders/:orderID/info')
+  @UseGuards(JwtAuthGuard)
+  getOrderInfo(@Param('orderID') orderID: number, @Request() req) {
+    return this.ordersService.findOne(orderID, req.user.id);
+  }
+
+  @Get('orders/barista/:baristaID/today')
+  @UseGuards(JwtAuthGuard)
+  getTotalSumForBaristaToday(
+    @Param('baristaID') baristaID: number,
+    @Request() req,
+  ) {
+    return this.ordersService.calculateTotalSumOfOrdersOnTodayByBaristaID(
+      baristaID,
+      req.user.id,
+    );
+  }
+
+  @Delete('orders/:orderID')
+  @UseGuards(JwtAuthGuard)
+  deleteORder(@Param('orderID') orderID: number, @Request() req) {
+    return this.ordersService.remove(orderID, req.user.id);
   }
 }
