@@ -10,10 +10,15 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/auth/guards/role.guards';
+import { AllowedRoles } from 'src/decorators/roles.decorator';
+import { Roles } from 'src/enums/roles.enum';
 import { AddIngredientDto } from 'src/ingredients/dto/add-ingredient.dto';
 import { IngredientsService } from 'src/ingredients/ingredients.service';
 import { CreateOrderDto } from 'src/orders/dto/create-order.dto';
 import { OrdersService } from 'src/orders/orders.service';
+import { TakeMoneyDto } from 'src/points/dto/take-money.dto';
+import { PointsService } from 'src/points/points.service';
 import { ShiftStatus } from 'src/shifts/entities/shift.entity';
 import { ShiftsService } from 'src/shifts/shifts.service';
 import { BaristaService } from './barista.service';
@@ -25,22 +30,26 @@ export class BaristaController {
     private readonly orderService: OrdersService,
     private readonly shiftService: ShiftsService,
     private readonly ingredientService: IngredientsService,
+    private readonly pointService: PointsService,
   ) {}
   @Post('orders')
-  @UseGuards(JwtAuthGuard)
+  @AllowedRoles(Roles.Barista)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @UsePipes(new ValidationPipe())
   createOrder(@Body() createOrderDto: CreateOrderDto, @Request() req) {
     return this.orderService.create(createOrderDto, req.user.id);
   }
 
   @Get('orders/:orderID/ready')
-  @UseGuards(JwtAuthGuard)
+  @AllowedRoles(Roles.Barista)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   completeOrder(@Param('orderID') orderID: number, @Request() req) {
     return this.orderService.completeOrder(orderID, req.user.id);
   }
 
   @Get('shift/start/:pointID')
-  @UseGuards(JwtAuthGuard)
+  @AllowedRoles(Roles.Barista)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   startShift(@Param('pointID') pointID: number, @Request() req) {
     return this.shiftService.create(
       ShiftStatus.StartOfWork,
@@ -51,7 +60,8 @@ export class BaristaController {
   }
 
   @Get('shift/end/:pointID')
-  @UseGuards(JwtAuthGuard)
+  @AllowedRoles(Roles.Barista)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   endShift(@Param('pointID') pointID: number, @Request() req) {
     return this.shiftService.create(
       ShiftStatus.EndOfWork,
@@ -62,7 +72,8 @@ export class BaristaController {
   }
 
   @Post('ingredients/:ingredientID/onPoint/:pointID')
-  @UseGuards(JwtAuthGuard)
+  @AllowedRoles(Roles.Barista)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @UsePipes()
   addIngredientsOnPoint(
     @Body() addIngredientDto: AddIngredientDto,
@@ -75,6 +86,22 @@ export class BaristaController {
       ingredientID,
       req.user.admin.id,
       addIngredientDto.quantity,
+    );
+  }
+
+  @Get('points/:pointID/takeMoney')
+  @UsePipes(new ValidationPipe())
+  @AllowedRoles(Roles.Barista)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  takeMoneyFromPointBalance(
+    @Param('pointID') pointID: number,
+    @Request() req,
+    @Body() takeMoneyDto: TakeMoneyDto,
+  ) {
+    return this.pointService.getMoneyFromBalance(
+      pointID,
+      req.user.id,
+      takeMoneyDto.amount,
     );
   }
 }

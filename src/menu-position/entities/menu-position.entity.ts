@@ -42,6 +42,7 @@ export class MenuPosition {
   discount: PositionDiscount;
   @ManyToOne(() => Category, (category) => category.positions, {
     onDelete: 'SET NULL',
+    eager: true,
   })
   category: Category;
   @ManyToOne(() => Point, (point) => point.menuPositions, {

@@ -14,6 +14,7 @@ export class OrderPosition {
   id: number;
   @ManyToOne(() => MenuPosition, (position) => position.orderPositions, {
     onDelete: 'SET NULL',
+    eager: true,
   })
   menuPosition: MenuPosition;
   @Column()

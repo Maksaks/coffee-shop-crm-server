@@ -27,7 +27,7 @@ export class ShiftsService {
         where: { id: pointID, admin: { id: adminID } },
         relations: { barista: true },
       })
-    ).barista.find((item) => item.id === baristaId);
+    )?.barista.find((item) => item.id === baristaId);
     if (!isBaristaOnPoint) {
       return new BadRequestException(
         `Barista #${baristaId} does not have access to this point #${pointID}`,
@@ -39,9 +39,18 @@ export class ShiftsService {
           barista: { id: baristaId },
           point: { admin: { id: adminID } },
         },
+        relations: { point: true },
         order: { id: 'DESC' },
         take: 1,
       });
+      if (
+        lastShift[0].status === ShiftStatus.StartOfWork.toString() &&
+        lastShift[0].point.id !== pointID
+      ) {
+        return new BadRequestException(
+          `Please end your shift at the point #${lastShift[0].point.id}`,
+        );
+      }
       if (
         !lastShift.length ||
         lastShift[0].status === ShiftStatus.EndOfWork.toString()

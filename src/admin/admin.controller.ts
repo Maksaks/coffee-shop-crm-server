@@ -12,12 +12,15 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/auth/guards/role.guards';
 import { BaristaService } from 'src/barista/barista.service';
 import { CreateBaristaDto } from 'src/barista/dto/create-barista.dto';
 import { UpdateBaristaDto } from 'src/barista/dto/update-barista.dto';
 import { CategoriesService } from 'src/categories/categories.service';
 import { CreateCategoryDto } from 'src/categories/dto/create-category.dto';
 import { UpdateCategoryDto } from 'src/categories/dto/update-category.dto';
+import { AllowedRoles } from 'src/decorators/roles.decorator';
+import { Roles } from 'src/enums/roles.enum';
 import { getMonthBefore } from 'src/helpers/GetingDate.helper';
 import { CreateIngredientDto } from 'src/ingredients/dto/create-ingredient.dto';
 import { GetByNameIngredientDto } from 'src/ingredients/dto/get-by-name-ingredient.dto';
@@ -55,33 +58,38 @@ export class AdminController {
   ) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   @UsePipes(new ValidationPipe())
   createAdmin(@Body() createAdminDto: CreateAdminDto) {
     return this.adminService.create(createAdminDto);
   }
 
   @Post('categories')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   @UsePipes(new ValidationPipe())
   createCategory(@Request() req, @Body() categoryDto: CreateCategoryDto) {
     return this.categoriesService.create(req.user.id, categoryDto);
   }
 
   @Get('categories')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   getAllCategories(@Request() req) {
     return this.categoriesService.findAll(req.user.id);
   }
 
   @Get('categories/:id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   getCategoriesById(@Param('id') id: number, @Request() req) {
     return this.categoriesService.findOne(id, req.user.id);
   }
 
   @Patch('categories/:id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   @UsePipes(new ValidationPipe())
   updateCategory(
     @Param('id') id: number,
@@ -91,32 +99,37 @@ export class AdminController {
     return this.categoriesService.update(id, req.user.id, updateCategoryDto);
   }
   @Delete('categories/:id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   deleteCategory(@Param('id') id: number, @Request() req) {
     return this.categoriesService.remove(id, req.user.id);
   }
 
   @Post('baristas')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   @UsePipes(new ValidationPipe())
   createBarista(@Body() createBaristaDto: CreateBaristaDto, @Request() req) {
     return this.baristaService.create(req.user.id, createBaristaDto);
   }
 
   @Get('baristas')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   getAllBaristas(@Request() req) {
     return this.baristaService.findAll(req.user.id);
   }
 
   @Get('baristas/:id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   getBaristaByID(@Param('id') id: number, @Request() req) {
     return this.baristaService.findOne(id, req.user.id);
   }
 
   @Patch('baristas/:id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   @UsePipes(new ValidationPipe())
   updateBarista(
     @Param('id') id: number,
@@ -127,13 +140,15 @@ export class AdminController {
   }
 
   @Delete('baristas/:id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   deleteBarista(@Param('id') id: number, @Request() req) {
     return this.baristaService.remove(id, req.user.id);
   }
 
   @Post('barista/:baristaId/setPoint/:pointID')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   setPointToBarista(
     @Param('baristaId') baristaId: number,
     @Param('pointID') pointID: number,
@@ -146,7 +161,8 @@ export class AdminController {
     );
   }
   @Post('barista/:baristaId/removePoint/:pointID')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   removePointFromBarista(
     @Param('baristaId') baristaId: number,
     @Param('pointID') pointID: number,
@@ -160,31 +176,36 @@ export class AdminController {
   }
 
   @Post('points')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   @UsePipes(new ValidationPipe())
   createPoint(@Body() createPointDto: CreatePointDto, @Request() req) {
     return this.pointService.create(req.user.id, createPointDto);
   }
 
   @Get('points/forBarista/:id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   getPointsByBaristaID(@Param('id') id: number, @Request() req) {
     return this.pointService.findPointsByBaristaID(id, req.user.id);
   }
 
   @Get('points')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   getAllPoints(@Request() req) {
     return this.pointService.findAll(req.user.id);
   }
   @Get('points/:id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   getPoint(@Param('id') id: number, @Request() req) {
     return this.pointService.findOne(id, req.user.id);
   }
 
   @Patch('points/:id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   updatePoint(
     @Param('id') id: number,
     @Request() req,
@@ -194,14 +215,16 @@ export class AdminController {
   }
 
   @Delete('points/:id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   deletePoint(@Param('id') id: number, @Request() req) {
     return this.pointService.remove(id, req.user.id);
   }
 
   @Post('ingredients/:pointID')
   @UsePipes(new ValidationPipe())
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   createIngredient(
     @Param('pointID') id: number,
     @Body() createIngredientDto: CreateIngredientDto,
@@ -211,20 +234,23 @@ export class AdminController {
   }
 
   @Get('ingredients')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   getAllIngredients(@Request() req) {
     return this.ingredientService.findAll(req.user.id);
   }
 
   @Get('ingredients/byID/:id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   @UsePipes(new ValidationPipe())
   getIngredientByID(@Param('id') id: number, @Request() req) {
     return this.ingredientService.findOneByID(id, req.user.id);
   }
 
   @Get('ingredients/byName')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   @UsePipes(new ValidationPipe())
   getIngredientByName(
     @Body() getByNameIngredientDto: GetByNameIngredientDto,
@@ -237,13 +263,15 @@ export class AdminController {
   }
 
   @Get('ingredients/:pointID')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   getAllIngredientsOnPoint(@Param('pointID') pointID: number, @Request() req) {
     return this.ingredientService.findAllOnPoint(pointID, req.user.id);
   }
 
   @Patch('ingredients/:id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   @UsePipes(new ValidationPipe())
   updateIngredient(
     @Body() updateIngredientDto: UpdateIngredientDto,
@@ -254,13 +282,15 @@ export class AdminController {
   }
 
   @Delete('ingredients/:id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   deleteIngredient(@Param('id') id: number, @Request() req) {
     return this.ingredientService.remove(id, req.user.id);
   }
 
   @Post('positions/:pointID')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   @UsePipes(new ValidationPipe())
   createPosition(
     @Param('pointID') pointID: number,
@@ -275,13 +305,15 @@ export class AdminController {
   }
 
   @Get('positions/:pointID')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   getMenu(@Param('pointID') pointID: number, @Request() req) {
     return this.menuPositionService.getMenu(pointID, req.user.id);
   }
 
   @Get('positions/:pointID/recipe/:positionID')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   getRecipe(
     @Param('positionID') positionID: number,
     @Param('pointID') pointID: number,
@@ -291,7 +323,8 @@ export class AdminController {
   }
 
   @Get('positions/:pointID/info/:positionID')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   getPositionInfo(
     @Param('positionID') positionID: number,
     @Param('pointID') pointID: number,
@@ -301,7 +334,8 @@ export class AdminController {
   }
 
   @Patch('positions/:pointID/update/:positionID')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   @UsePipes(new ValidationPipe())
   updatePosition(
     @Param('positionID') positionID: number,
@@ -318,7 +352,8 @@ export class AdminController {
   }
 
   @Delete('positions/:pointID/delete/:positionID')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   deletePosition(
     @Param('positionID') positionID: number,
     @Param('pointID') pointID: number,
@@ -328,19 +363,21 @@ export class AdminController {
   }
 
   @Get('shifts/point/:pointID')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   getShiftsByPoint(@Param('pointID') pointID: number, @Request() req) {
     return this.shiftsService.getAllShiftsByPoint(pointID, req.user.id);
   }
 
   @Get('shifts/barista/:baristaID')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   getShiftsByBarista(@Param('baristaID') baristaID: number, @Request() req) {
     return this.shiftsService.getAllShiftsByBarista(baristaID, req.user.id);
   }
 
   @Get('shifts/statistics/:baristaID')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   getStatistics(@Param('baristaID') baristaID: number, @Request() req) {
     return this.shiftsService.getBaristaSalaryAndCountOfShiftsForPeriod(
       req.user.id,
@@ -351,7 +388,8 @@ export class AdminController {
   }
 
   @Get('shifts/:baristaID/state')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   getCurrentBaristaState(
     @Param('baristaID') baristaID: number,
     @Request() req,
@@ -361,7 +399,8 @@ export class AdminController {
 
   @Post('discounts/:positionID')
   @UsePipes(new ValidationPipe())
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   createDiscount(
     @Body() createDiscountDto: CreateDiscountDto,
     @Param('positionID') positionID: number,
@@ -374,18 +413,21 @@ export class AdminController {
     );
   }
   @Get('discounts')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   getDiscountAllDiscount(@Request() req) {
     return this.discountsService.findAll(req.user.id);
   }
   @Get('discounts/point/:pointID')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   getDiscountsOnPoint(@Param('pointID') pointID: number, @Request() req) {
     return this.discountsService.findDiscountByPointID(pointID, req.user.id);
   }
 
   @Patch('discounts/:positionID')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   @UsePipes(new ValidationPipe())
   updateDiscount(
     @Param('positionID') positionID: number,
@@ -400,31 +442,36 @@ export class AdminController {
   }
 
   @Delete('discounts/:positionID')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   deleteDiscount(@Param('positionID') positionID: number, @Request() req) {
     return this.discountsService.remove(positionID, req.user.id);
   }
 
   @Get('orders/:orderID/list')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   getOrderPositionList(@Param('orderID') orderID: number, @Request() req) {
     return this.orderPositionService.getOrderList(orderID, req.user.id);
   }
 
   @Get('orders')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   getAllOrders(@Request() req) {
     return this.ordersService.findAll(req.user.id);
   }
 
   @Get('orders/:pointID')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   getOrdersByPoint(@Param('pointID') pointID: number, @Request() req) {
     return this.ordersService.findByPointId(pointID, req.user.id);
   }
 
   @Get('orders/byBarista/:baristaID')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   getOrdersForPeriodByBarista(
     @Param('baristaID') baristaID: number,
     @Request() req,
@@ -438,13 +485,15 @@ export class AdminController {
   }
 
   @Get('orders/:orderID/info')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   getOrderInfo(@Param('orderID') orderID: number, @Request() req) {
     return this.ordersService.findOne(orderID, req.user.id);
   }
 
   @Get('orders/barista/:baristaID/today')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   getTotalSumForBaristaToday(
     @Param('baristaID') baristaID: number,
     @Request() req,
@@ -456,7 +505,8 @@ export class AdminController {
   }
 
   @Delete('orders/:orderID')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
   deleteORder(@Param('orderID') orderID: number, @Request() req) {
     return this.ordersService.remove(orderID, req.user.id);
   }
