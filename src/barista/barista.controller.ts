@@ -10,6 +10,8 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { AddIngredientDto } from 'src/ingredients/dto/add-ingredient.dto';
+import { IngredientsService } from 'src/ingredients/ingredients.service';
 import { CreateOrderDto } from 'src/orders/dto/create-order.dto';
 import { OrdersService } from 'src/orders/orders.service';
 import { ShiftStatus } from 'src/shifts/entities/shift.entity';
@@ -22,6 +24,7 @@ export class BaristaController {
     private readonly baristaService: BaristaService,
     private readonly orderService: OrdersService,
     private readonly shiftService: ShiftsService,
+    private readonly ingredientService: IngredientsService,
   ) {}
   @Post('orders')
   @UseGuards(JwtAuthGuard)
@@ -55,6 +58,23 @@ export class BaristaController {
       pointID,
       req.user.id,
       req.user.admin.id,
+    );
+  }
+
+  @Post('ingredients/:ingredientID/onPoint/:pointID')
+  @UseGuards(JwtAuthGuard)
+  @UsePipes()
+  addIngredientsOnPoint(
+    @Body() addIngredientDto: AddIngredientDto,
+    @Param('ingredientID') ingredientID: number,
+    @Param('pointID') pointID: number,
+    @Request() req,
+  ) {
+    return this.ingredientService.addQuantityOfIngredientsOnPoint(
+      req.user.id,
+      ingredientID,
+      req.user.admin.id,
+      addIngredientDto.quantity,
     );
   }
 }

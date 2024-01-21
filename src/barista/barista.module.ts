@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { IngredientsModule } from 'src/ingredients/ingredients.module';
 import { OrdersModule } from 'src/orders/orders.module';
 import { Point } from 'src/points/entities/points.entity';
 import { ShiftsModule } from 'src/shifts/shifts.module';
@@ -12,6 +13,7 @@ import { Barista } from './entities/barista.entity';
     TypeOrmModule.forFeature([Barista, Point]),
     OrdersModule,
     ShiftsModule,
+    IngredientsModule,
   ],
   controllers: [BaristaController],
   providers: [BaristaService],

@@ -113,17 +113,21 @@ export class IngredientsService {
   async addQuantityOfIngredientsOnPoint(
     baristaID: number,
     ingredientID: number,
-    newQuantityOfIngredient,
+    adminID: number,
+    addQuantityOfIngredient,
   ) {
     const existedIngredient = await this.ingredientRepository.findOne({
-      where: { id: ingredientID, point: { barista: { id: baristaID } } },
+      where: {
+        id: ingredientID,
+        point: { barista: { id: baristaID, admin: { id: adminID } } },
+      },
     });
     if (!existedIngredient) {
       return new BadRequestException(
         `Ingredient with #${ingredientID} was not found`,
       );
     }
-    existedIngredient.quantity += newQuantityOfIngredient;
+    existedIngredient.quantity += addQuantityOfIngredient;
     return await this.ingredientRepository.save(existedIngredient);
   }
 }
