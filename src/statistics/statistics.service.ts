@@ -268,4 +268,100 @@ export class StatisticsService {
     }
     return resultList;
   }
+
+  async getConsumptionOfIngredientsByPoint(
+    pointID: number,
+    adminID: number,
+    from: Date,
+    to: Date,
+  ) {
+    type IngredientData = {
+      name: string;
+      price: number;
+      consumption: number;
+    };
+    const totalData = new Map<number, IngredientData>();
+    const orderPositionsByPoint = await this.orderPositionRepository.find({
+      where: {
+        menuPosition: { point: { id: pointID, admin: { id: adminID } } },
+        order: { createdAt: from < to ? Between(from, to) : Between(to, from) },
+      },
+      relations: { menuPosition: true },
+    });
+
+    orderPositionsByPoint.map((position) => {
+      position.menuPosition.recipe.ingredients.map((ingredient) => {
+        const data = totalData.get(ingredient.id);
+        if (!data) {
+          totalData.set(ingredient.id, {
+            name: ingredient.name,
+            price: ingredient.price,
+            consumption: position.quantity,
+          });
+        } else {
+          data.consumption += position.quantity;
+          totalData.set(ingredient.id, data);
+        }
+      });
+    });
+    const resultList = [];
+    for (const [key, value] of totalData) {
+      resultList.push({
+        id: key,
+        ...value,
+      });
+    }
+    return resultList;
+  }
+
+  async getOrdersCountByCategories(adminID: number, from: Date, to: Date) {
+    type CategoryData = {
+      title: string;
+      orders_count: number;
+      total_income: number;
+    };
+    const totalData = new Map<number, CategoryData>();
+    const orderPositionsByPoint = await this.orderPositionRepository.find({
+      where: {
+        menuPosition: { point: { admin: { id: adminID } } },
+        order: { createdAt: from < to ? Between(from, to) : Between(to, from) },
+      },
+      relations: { menuPosition: true, order: true },
+    });
+
+    orderPositionsByPoint.map((orderPosition) => {
+      const data = totalData.get(orderPosition.menuPosition.category.id);
+      if (!data) {
+        totalData.set(orderPosition.menuPosition.category.id, {
+          title: orderPosition.menuPosition.category.title,
+          total_income:
+            (orderPosition.menuPosition.price -
+              orderPosition.menuPosition.recipe.ingredients.reduce(
+                (acc, cur) => acc + cur.price,
+                0,
+              )) *
+            orderPosition.quantity,
+          orders_count: 1,
+        });
+      } else {
+        data.orders_count += 1;
+        data.total_income +=
+          orderPosition.menuPosition.price -
+          orderPosition.menuPosition.recipe.ingredients.reduce(
+            (acc, cur) => acc + cur.price,
+            0,
+          ) *
+            orderPosition.quantity;
+        totalData.set(orderPosition.menuPosition.category.id, data);
+      }
+    });
+    const resultList = [];
+    for (const [key, value] of totalData) {
+      resultList.push({
+        id: key,
+        ...value,
+      });
+    }
+    return resultList;
+  }
 }

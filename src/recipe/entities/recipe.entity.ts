@@ -23,6 +23,7 @@ export class Recipe {
   menuPosition: MenuPosition;
   @ManyToMany(() => Ingredient, (ingredient) => ingredient.recipes, {
     onDelete: 'SET NULL',
+    eager: true,
   })
   ingredients: Ingredient[];
 }

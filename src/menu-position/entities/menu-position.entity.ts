@@ -27,6 +27,7 @@ export class MenuPosition {
   @OneToOne(() => Recipe, (recipe) => recipe.menuPosition, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
+    eager: true,
   })
   @JoinColumn({ name: 'recipe_id' })
   recipe: Recipe;

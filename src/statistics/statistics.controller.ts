@@ -99,4 +99,36 @@ export class StatisticsController {
       periodForStatistic.to,
     );
   }
+
+  @Get('ingredients/:pointID')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UsePipes(new ValidationPipe())
+  @AllowedRoles(Roles.Admin)
+  getConsumptionOfIngredientsByPoint(
+    @Param('pointID') pointID: number,
+    @Body() periodForStatistic: PeriodForStatistic,
+    @Request() req,
+  ) {
+    return this.statisticsService.getConsumptionOfIngredientsByPoint(
+      pointID,
+      req.user.id,
+      periodForStatistic.from,
+      periodForStatistic.to,
+    );
+  }
+
+  @Get('categories')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UsePipes(new ValidationPipe())
+  @AllowedRoles(Roles.Admin)
+  getOrdersCountByCategories(
+    @Body() periodForStatistic: PeriodForStatistic,
+    @Request() req,
+  ) {
+    return this.statisticsService.getOrdersCountByCategories(
+      req.user.id,
+      periodForStatistic.from,
+      periodForStatistic.to,
+    );
+  }
 }
