@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { IngredientsModule } from 'src/ingredients/ingredients.module';
+import { MailerSenderModule } from 'src/mailer/mailer.module';
 import { OrdersModule } from 'src/orders/orders.module';
 import { Point } from 'src/points/entities/points.entity';
 import { PointModule } from 'src/points/points.module';
@@ -16,6 +17,7 @@ import { Barista } from './entities/barista.entity';
     ShiftsModule,
     IngredientsModule,
     PointModule,
+    MailerSenderModule,
   ],
   controllers: [BaristaController],
   providers: [BaristaService],

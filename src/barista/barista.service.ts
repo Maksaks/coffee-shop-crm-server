@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as argon2 from 'argon2';
+import { MailerSenderService } from 'src/mailer/mailer.service';
 import { Point } from 'src/points/entities/points.entity';
 import { Repository } from 'typeorm';
 import { CreateBaristaDto } from './dto/create-barista.dto';
@@ -14,11 +15,11 @@ export class BaristaService {
     private readonly baristaRepository: Repository<Barista>,
     @InjectRepository(Point)
     private readonly pointRepository: Repository<Point>,
+    private readonly mailerService: MailerSenderService,
   ) {}
   async create(adminID: number, createBaristaDto: CreateBaristaDto) {
     const exsitedBarista = await this.baristaRepository.findOne({
       where: {
-        admin: { id: adminID },
         email: createBaristaDto.email,
       },
     });
@@ -26,6 +27,12 @@ export class BaristaService {
       return new BadRequestException(
         `Barista with email ${createBaristaDto.email} has already existed`,
       );
+    await this.mailerService.sendEmailWithLoginData(
+      createBaristaDto.surname + ' ' + createBaristaDto.name,
+      createBaristaDto.email,
+      createBaristaDto.password,
+      createBaristaDto.email,
+    );
     const newBarista = {
       ...createBaristaDto,
       password: await argon2.hash(createBaristaDto.password),
@@ -58,10 +65,16 @@ export class BaristaService {
   }
 
   async findOneByEmail(email: string) {
-    return await this.baristaRepository.findOne({
+    const existedBarista = await this.baristaRepository.findOne({
       where: { email },
       relations: { admin: true },
     });
+    if (!existedBarista) {
+      return new BadRequestException(
+        `Barista with email ${email} was not found`,
+      );
+    }
+    return existedBarista;
   }
 
   async update(
@@ -86,11 +99,21 @@ export class BaristaService {
         return new BadRequestException(
           `Barista with email ${updateBaristaDto.email}`,
         );
+      if (!updateBaristaDto.password)
+        await this.mailerService.sendEmailAboutUpdatingLoginData(
+          exsitedBarista.surname + ' ' + exsitedBarista.name,
+          exsitedBarista.email,
+          'Password was changed. Use last one.',
+          exsitedBarista.email,
+        );
     }
-    if (
-      updateBaristaDto.password &&
-      !(await argon2.verify(updateBaristaDto.password, exsitedBarista.password))
-    ) {
+    if (updateBaristaDto.password) {
+      await this.mailerService.sendEmailAboutUpdatingLoginData(
+        exsitedBarista.surname + ' ' + exsitedBarista.name,
+        updateBaristaDto.email ? updateBaristaDto.email : exsitedBarista.email,
+        updateBaristaDto.password,
+        updateBaristaDto.email ? updateBaristaDto.email : exsitedBarista.email,
+      );
       updateBaristaDto.password = await argon2.hash(updateBaristaDto.password);
     }
     return await this.baristaRepository.update(id, updateBaristaDto);

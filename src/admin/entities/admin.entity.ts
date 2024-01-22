@@ -17,6 +17,8 @@ export class Admin {
   email: string;
   @Column()
   password: string;
+  @Column('boolean', { default: false })
+  isEmailConfirmed: boolean;
   @OneToMany(() => Barista, (barista) => barista.admin, {
     onDelete: 'SET NULL',
   })

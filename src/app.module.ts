@@ -9,6 +9,7 @@ import { BaristaModule } from './barista/barista.module';
 import { CategoriesModule } from './categories/categories.module';
 import { IngredientsModule } from './ingredients/ingredients.module';
 import { IngredientsService } from './ingredients/ingredients.service';
+import { MailerSenderModule } from './mailer/mailer.module';
 import { MenuPositionModule } from './menu-position/menu-position.module';
 import { MenuPositionService } from './menu-position/menu-position.service';
 import { OrderPositionModule } from './order-position/order-position.module';
@@ -54,6 +55,7 @@ import { StatisticsModule } from './statistics/statistics.module';
     PointModule,
     RecipesModule,
     ShiftsModule,
+    MailerSenderModule,
   ],
   controllers: [AppController],
   providers: [

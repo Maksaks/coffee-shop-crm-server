@@ -1,11 +1,57 @@
-import { Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Request,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { CreateAdminDto } from 'src/admin/dto/create-admin.dto';
+import { MailerSenderService } from 'src/mailer/mailer.service';
 import { AuthService } from './auth.service';
+import { RestorePasswordDto } from './dto/restore-password.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly mailersSenderService: MailerSenderService,
+    private readonly jwtService: JwtService,
+  ) {}
+
+  @Post('registration')
+  @UsePipes(new ValidationPipe())
+  async registrationAdmin(@Body() adminRegistrationDto: CreateAdminDto) {
+    return this.authService.registrationAdmin(adminRegistrationDto);
+  }
+
+  @Get('confirming/:token')
+  async confirmingEmail(@Param('token') token: string) {
+    return this.authService.confirmingEmail(token);
+  }
+
+  @Post('password/restore')
+  @UsePipes(new ValidationPipe())
+  async restorePassword(@Body() restorePasswordDto: RestorePasswordDto) {
+    return this.authService.restorePassword(restorePasswordDto);
+  }
+
+  @Post('password/update/:token')
+  @UsePipes(new ValidationPipe())
+  async updatingPassword(
+    @Param('token') token: string,
+    @Body() updatePasswordDto: UpdatePasswordDto,
+  ) {
+    return this.authService.updatePassword(token, updatePasswordDto);
+  }
+
   @Post('login')
   @UseGuards(LocalAuthGuard)
   async login(@Request() req) {

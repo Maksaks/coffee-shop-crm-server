@@ -4,6 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AdminModule } from 'src/admin/admin.module';
 import { BaristaModule } from 'src/barista/barista.module';
+import { MailerSenderModule } from 'src/mailer/mailer.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategy/jwt.strategy';
@@ -22,6 +23,7 @@ import { LocalStrategy } from './strategy/local.strategy';
       }),
       inject: [ConfigService],
     }),
+    MailerSenderModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy, JwtStrategy],
