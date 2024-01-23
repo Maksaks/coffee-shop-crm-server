@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as argon2 from 'argon2';
+import { getMonthBefore } from 'src/helpers/GetingDate.helper';
 import { MailerSenderService } from 'src/mailer/mailer.service';
 import { Point } from 'src/points/entities/points.entity';
-import { Repository } from 'typeorm';
+import { Shift, ShiftStatus } from 'src/shifts/entities/shift.entity';
+import { Between, Repository } from 'typeorm';
 import { CreateBaristaDto } from './dto/create-barista.dto';
 import { UpdateBaristaDto } from './dto/update-barista.dto';
 import { Barista } from './entities/barista.entity';
@@ -13,6 +16,8 @@ export class BaristaService {
   constructor(
     @InjectRepository(Barista)
     private readonly baristaRepository: Repository<Barista>,
+    @InjectRepository(Shift)
+    private readonly shiftRepository: Repository<Shift>,
     @InjectRepository(Point)
     private readonly pointRepository: Repository<Point>,
     private readonly mailerService: MailerSenderService,
@@ -165,5 +170,28 @@ export class BaristaService {
     }
     barista.points = barista.points.filter((point) => point.id != pointId);
     return await this.baristaRepository.save(barista);
+  }
+
+  async getInfoAboutMeDuringLastMonth(baristaID: number, adminID: number) {
+    const { password, ...baristaMe } = await this.baristaRepository.findOne({
+      where: { id: baristaID, admin: { id: adminID } },
+    });
+    const shiftsMe = await this.shiftRepository.find({
+      where: {
+        barista: { id: baristaID },
+        point: { admin: { id: adminID } },
+        status: ShiftStatus.EndOfWork,
+        time: Between(getMonthBefore(), new Date()),
+      },
+    });
+    const totalShiftsSalary = shiftsMe.reduce(
+      (acc, cur) => acc + cur.baristaSalary,
+      0,
+    );
+    return {
+      ...baristaMe,
+      totalShiftsSalary,
+      shifts: shiftsMe,
+    };
   }
 }

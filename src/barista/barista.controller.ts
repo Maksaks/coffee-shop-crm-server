@@ -104,4 +104,35 @@ export class BaristaController {
       takeMoneyDto.amount,
     );
   }
+
+  @Get('points/:pointID')
+  @AllowedRoles(Roles.Barista)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  getPointInfo(@Param('pointID') pointID: number, @Request() req) {
+    return this.pointService.findByBaristaAndPoint(
+      pointID,
+      req.user.id,
+      req.user.admin.id,
+    );
+  }
+
+  @Get('orders')
+  @AllowedRoles(Roles.Barista)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  getOrdersForCurrentShift(@Request() req) {
+    return this.orderService.findOrdersByBaristaCurrentShift(
+      req.user.id,
+      req.user.admin.id,
+    );
+  }
+
+  @Get('me')
+  @AllowedRoles(Roles.Barista)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  getInfoAboutMe(@Request() req) {
+    return this.baristaService.getInfoAboutMeDuringLastMonth(
+      req.user.id,
+      req.user.admin.id,
+    );
+  }
 }

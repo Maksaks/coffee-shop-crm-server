@@ -5,6 +5,7 @@ import { MenuPosition } from 'src/menu-position/entities/menu-position.entity';
 import { OrderPositionService } from 'src/order-position/order-position.service';
 import { PointsService } from 'src/points/points.service';
 import { RecipeService } from 'src/recipe/recipe.service';
+import { Shift, ShiftStatus } from 'src/shifts/entities/shift.entity';
 import { Between, Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { Order, OrderStatus, PaymentMethod } from './entities/orders.entity';
@@ -16,11 +17,30 @@ export class OrdersService {
     private readonly orderRepository: Repository<Order>,
     @InjectRepository(MenuPosition)
     private readonly positionRepository: Repository<MenuPosition>,
+    @InjectRepository(Shift)
+    private readonly shiftRepository: Repository<Shift>,
     private readonly pointService: PointsService,
     private readonly recipeService: RecipeService,
     private readonly orderPositionService: OrderPositionService,
   ) {}
   async create(createOrderDto: CreateOrderDto, baristaID: number) {
+    const currentShift = await this.shiftRepository.find({
+      where: {
+        barista: { id: baristaID },
+        point: { id: createOrderDto.point.id },
+      },
+      relations: { point: true },
+      order: { id: 'DESC' },
+      take: 1,
+    });
+    if (!currentShift.length) {
+      return new BadRequestException('Shifts for this barista were not found');
+    }
+    if (
+      currentShift[0].status.toString() === ShiftStatus.EndOfWork.toString()
+    ) {
+      return new BadRequestException('First, you need to start the shift!');
+    }
     const costOfIngredients = await this.recipeService.getCostOfIngredientsList(
       createOrderDto.point.id,
       createOrderDto.orderList,
@@ -80,6 +100,38 @@ export class OrdersService {
       where: { point: { id: pointID } },
       relations: { orderList: true, barista: true },
     });
+  }
+
+  async findOrdersByBaristaCurrentShift(baristaID: number, adminID: number) {
+    const currentShift = await this.shiftRepository.find({
+      where: {
+        barista: { id: baristaID },
+        point: { admin: { id: adminID } },
+      },
+      relations: { point: true },
+      order: { id: 'DESC' },
+      take: 1,
+    });
+    if (!currentShift.length) {
+      return new BadRequestException('Shifts for this barista were not found');
+    }
+    if (
+      currentShift[0].status.toString() === ShiftStatus.EndOfWork.toString()
+    ) {
+      return new BadRequestException('First, you need to start the shift!');
+    }
+    const currentShiftOrders = await this.orderRepository.find({
+      where: {
+        barista: { id: baristaID, admin: { id: adminID } },
+        point: { id: currentShift[0].point.id },
+        createdAt: Between(currentShift[0].time, new Date()),
+      },
+    });
+
+    if (!currentShiftOrders.length) {
+      return new BadRequestException('Orders for current shift were not found');
+    }
+    return currentShiftOrders;
   }
 
   async findByBaristaIDAndForPeriod(

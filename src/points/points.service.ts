@@ -78,6 +78,26 @@ export class PointsService {
       },
     });
   }
+
+  async findByBaristaAndPoint(id: number, baristaID: number, adminID: number) {
+    const existedPoint = await this.pointRepository.findOne({
+      where: { id, barista: { id: baristaID }, admin: { id: adminID } },
+    });
+    if (!existedPoint) {
+      return new BadRequestException(`Point #${id} was not found`);
+    }
+    return await this.pointRepository.findOne({
+      where: { id },
+      relations: {
+        barista: true,
+        ingredients: true,
+        orders: true,
+        shifts: true,
+        menuPositions: true,
+      },
+    });
+  }
+
   async update(id: number, updatePointDto: UpdatePointDto, adminID: number) {
     const existedPoint = await this.pointRepository.findOne({
       where: { id, admin: { id: adminID } },
