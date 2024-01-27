@@ -23,7 +23,7 @@ export class PositionDiscountService {
       where: { id: positionID, point: { admin: { id: adminID } } },
     });
     if (!existedMenuPosition) {
-      return new BadRequestException(`Position #${positionID} was not found`);
+      throw new BadRequestException(`Position #${positionID} was not found`);
     }
     let existedDiscountForPosition = await this.discountRepository.findOne({
       where: { menuPosition: { id: positionID } },
@@ -37,7 +37,7 @@ export class PositionDiscountService {
       existedDiscountForPosition = undefined;
     }
     if (existedDiscountForPosition) {
-      return new BadRequestException(
+      throw new BadRequestException(
         'Discount for this MenuPosition has already existed',
       );
     }
@@ -49,7 +49,7 @@ export class PositionDiscountService {
       ...existedMenuPosition,
       discount: newDiscount,
     });
-    return newDiscount;
+    throw newDiscount;
   }
 
   async findAll(adminID: number) {
@@ -77,7 +77,7 @@ export class PositionDiscountService {
       (item) => item.endAt > new Date(),
     );
     if (!existedDiscountsForPoint.length) {
-      return new BadRequestException('Discounts for this point were not found');
+      throw new BadRequestException('Discounts for this point were not found');
     }
 
     return existedDiscountsForPoint;
@@ -94,7 +94,7 @@ export class PositionDiscountService {
       },
     });
     if (!existedDiscount) {
-      return new BadRequestException(
+      throw new BadRequestException(
         `Discount for position#${positionID} was not found`,
       );
     }
@@ -111,7 +111,7 @@ export class PositionDiscountService {
       },
     });
     if (!existedDiscount) {
-      return new BadRequestException(
+      throw new BadRequestException(
         `Discount for position #${positionId} was not found`,
       );
     }

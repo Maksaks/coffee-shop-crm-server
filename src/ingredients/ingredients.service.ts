@@ -26,7 +26,7 @@ export class IngredientsService {
       },
     });
     if (!existedPoint) {
-      return new BadRequestException(`Point #${[pointID]} has not existed`);
+      throw new BadRequestException(`Point #${[pointID]} has not existed`);
     }
     const existedIngredient = await this.ingredientRepository.findOne({
       where: {
@@ -35,7 +35,7 @@ export class IngredientsService {
       },
     });
     if (existedIngredient) {
-      return new BadRequestException(
+      throw new BadRequestException(
         `Ingredient with name [${createIngredientDro.name}] has already existed on Point with #${pointID}`,
       );
     }
@@ -55,7 +55,7 @@ export class IngredientsService {
       where: { point: { id: pointID, admin: { id: adminID } } },
     });
     if (!existedIngredient.length) {
-      return new BadRequestException(`No ingredients on Point #${pointID}`);
+      throw new BadRequestException(`No ingredients on Point #${pointID}`);
     }
     return existedIngredient;
   }
@@ -68,7 +68,7 @@ export class IngredientsService {
       relations: { recipes: true, point: true },
     });
     if (!existedIngredient) {
-      return new BadRequestException(`Ingredient with #${id} was not found`);
+      throw new BadRequestException(`Ingredient with #${id} was not found`);
     }
     return existedIngredient;
   }
@@ -78,7 +78,7 @@ export class IngredientsService {
       relations: { recipes: true, point: true },
     });
     if (!existedIngredient) {
-      return new BadRequestException(
+      throw new BadRequestException(
         `Ingredients with name "${name}" was not found`,
       );
     }
@@ -93,7 +93,7 @@ export class IngredientsService {
       where: { id, point: { admin: { id: adminID } } },
     });
     if (!existedIngredient) {
-      return new BadRequestException(`Ingredient with #${id} was not found`);
+      throw new BadRequestException(`Ingredient with #${id} was not found`);
     }
     return await this.ingredientRepository.update(id, updateIngredientDto);
   }
@@ -103,7 +103,7 @@ export class IngredientsService {
       where: { id, point: { admin: { id: adminID } } },
     });
     if (!existedIngredient) {
-      return new BadRequestException(`Ingredient with #${id} was not found`);
+      throw new BadRequestException(`Ingredient with #${id} was not found`);
     }
     existedIngredient.recipes = [];
     await this.ingredientRepository.save(existedIngredient);
@@ -123,7 +123,7 @@ export class IngredientsService {
       },
     });
     if (!existedIngredient) {
-      return new BadRequestException(
+      throw new BadRequestException(
         `Ingredient with #${ingredientID} was not found`,
       );
     }

@@ -37,7 +37,7 @@ export class AdminService {
       where: { id },
     });
     if (!existedAdmin) {
-      return new BadRequestException(
+      throw new BadRequestException(
         `Admin with #${id} hasn\`t already existed`,
       );
     }
@@ -49,7 +49,7 @@ export class AdminService {
       where: { email },
     });
     if (!existedAdmin) {
-      return new BadRequestException(`Admin hasn\`t already existed`);
+      throw new BadRequestException(`Admin hasn\`t already existed`);
     }
     return existedAdmin;
   }
@@ -59,7 +59,7 @@ export class AdminService {
       where: { id },
     });
     if (!existedAdmin) {
-      return new BadRequestException(
+      throw new BadRequestException(
         `Admin with #${id} hasn\`t already existed`,
       );
     }
@@ -93,7 +93,7 @@ export class AdminService {
       where: { id },
     });
     if (!existedAdmin) {
-      return new BadRequestException(
+      throw new BadRequestException(
         `Admin with #${id} hasn\`t already existed`,
       );
     }
@@ -105,7 +105,7 @@ export class AdminService {
       where: { id },
     });
     if (!existedAdmin) {
-      return new BadRequestException(
+      throw new BadRequestException(
         `Admin with #${id} hasn\`t already existed`,
       );
     }

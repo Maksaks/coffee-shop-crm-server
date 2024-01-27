@@ -26,7 +26,7 @@ export class MenuPositionService {
       where: { name: menuPositionCreateDto.name, point: { id: pointID } },
     });
     if (existedPosition) {
-      return new BadRequestException(
+      throw new BadRequestException(
         `Menu Position with name '${existedPosition.name}' has already existed`,
       );
     }
@@ -38,14 +38,14 @@ export class MenuPositionService {
       relations: { ingredients: true },
     });
     if (!existedPoint) {
-      return new BadRequestException(`Point #${pointID} was not found`);
+      throw new BadRequestException(`Point #${pointID} was not found`);
     }
     if (menuPositionCreateDto.ingredients.length) {
       for (const ingredient of menuPositionCreateDto.ingredients) {
         if (
           !existedPoint.ingredients.find((item) => item.id === ingredient.id)
         ) {
-          return new BadRequestException(
+          throw new BadRequestException(
             'Not all ingredients are existed on Point',
           );
         }
@@ -69,7 +69,7 @@ export class MenuPositionService {
       recipe: recipe,
     });
     await this.recipeRepository.save({ ...recipe, menuPosition: newPosition });
-    return newPosition;
+    throw newPosition;
   }
 
   async getMenu(pointID: number, adminID: number) {
@@ -78,7 +78,7 @@ export class MenuPositionService {
       relations: { category: true, recipe: true, discount: true },
     });
     if (!existedMenuPositions.length) {
-      return new BadRequestException(
+      throw new BadRequestException(
         `Any menu position on this point was not found`,
       );
     }
@@ -95,7 +95,7 @@ export class MenuPositionService {
       where: { id, point: { id: pointID, admin: { id: adminID } } },
     });
     if (!existedPosition) {
-      return new BadRequestException(`Menu Position with #${id} was not found`);
+      throw new BadRequestException(`Menu Position with #${id} was not found`);
     }
     return await this.menuPositionRepository.findOne({
       where: { id },
@@ -113,7 +113,7 @@ export class MenuPositionService {
       relations: { recipe: true },
     });
     if (!existedPosition) {
-      return new BadRequestException(`Menu Position with #${id} was not found`);
+      throw new BadRequestException(`Menu Position with #${id} was not found`);
     }
     if (
       !updatedMenuPositionDto.ingredients &&
@@ -152,7 +152,7 @@ export class MenuPositionService {
           if (
             !existedPoint.ingredients.find((item) => item.id === ingredient.id)
           ) {
-            return new BadRequestException(
+            throw new BadRequestException(
               'Not all ingredients are existed on Point',
             );
           }
@@ -186,7 +186,7 @@ export class MenuPositionService {
       relations: { recipe: true },
     });
     if (!existedPosition) {
-      return new BadRequestException(`Menu Position with #${id} was not found`);
+      throw new BadRequestException(`Menu Position with #${id} was not found`);
     }
     const recipe = await this.recipeRepository.findOne({
       where: { id: existedPosition.recipe.id },
@@ -203,7 +203,7 @@ export class MenuPositionService {
       where: { id, point: { id: pointID, admin: { id: adminID } } },
     });
     if (!existedPosition) {
-      return new BadRequestException(`Menu Position with #${id} was not found`);
+      throw new BadRequestException(`Menu Position with #${id} was not found`);
     }
     return await this.recipeRepository.findOne({
       where: { menuPosition: { id } },
