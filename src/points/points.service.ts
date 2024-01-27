@@ -24,7 +24,7 @@ export class PointsService {
     });
     if (existedPoint) {
       return new BadRequestException(
-        `Point with name ${createPointDto.name} has already existed`,
+        `Point with name [${createPointDto.name}] has already existed`,
       );
     }
     return await this.pointRepository.save({

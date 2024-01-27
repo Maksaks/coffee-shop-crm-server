@@ -26,7 +26,7 @@ export class IngredientsService {
       },
     });
     if (!existedPoint) {
-      return new BadRequestException(`Point #${[pointID]} has not existed`);
+      return new BadRequestException(`Any point #${[pointID]} has not existed`);
     }
     const existedIngredient = await this.ingredientRepository.findOne({
       where: {

@@ -57,7 +57,7 @@ export class BaristaService {
       where: { id, admin: { id: adminID } },
     });
     if (!exsitedBarista)
-      return new BadRequestException(`No Barista with #${id}`);
+      return new BadRequestException(`No barista with #${id}`);
     return await this.baristaRepository.findOne({
       where: { id },
       relations: { points: true, shifts: true, orders: true },

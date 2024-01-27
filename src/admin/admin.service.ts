@@ -38,7 +38,7 @@ export class AdminService {
     });
     if (!existedAdmin) {
       return new BadRequestException(
-        `Admin with #${id} hasn\`t already existed`,
+        `Any admin with #${id} hasn\`t already existed`,
       );
     }
     return existedAdmin;

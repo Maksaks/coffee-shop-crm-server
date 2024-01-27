@@ -165,7 +165,7 @@ export class OrdersService {
           });
     if (!existedOrdersForBarista.length) {
       return new BadRequestException(
-        `Orders for barista #${baristaID} during selected period were not found`,
+        `Any orders for barista #${baristaID} during selected period were not found`,
       );
     }
     return existedOrdersForBarista;

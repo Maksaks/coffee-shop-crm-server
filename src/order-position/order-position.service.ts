@@ -27,7 +27,7 @@ export class OrderPositionService {
       },
     });
     if (!orderList.length) {
-      return new BadRequestException(`Order #${orderID} was not found`);
+      return new BadRequestException(`Any order #${orderID} was not found`);
     }
     return orderList;
   }

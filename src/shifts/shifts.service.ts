@@ -122,7 +122,7 @@ export class ShiftsService {
     });
     if (!shifts.length) {
       return new BadRequestException(
-        `Shifts for Barista with #${id} weren\`t found`,
+        `Any shifts for Barista with #${id} weren\`t found`,
       );
     }
     return shifts;

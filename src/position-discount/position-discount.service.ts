@@ -23,7 +23,9 @@ export class PositionDiscountService {
       where: { id: positionID, point: { admin: { id: adminID } } },
     });
     if (!existedMenuPosition) {
-      return new BadRequestException(`Position #${positionID} was not found`);
+      return new BadRequestException(
+        `Any position #${positionID} was not found`,
+      );
     }
     let existedDiscountForPosition = await this.discountRepository.findOne({
       where: { menuPosition: { id: positionID } },

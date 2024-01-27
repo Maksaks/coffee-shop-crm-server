@@ -27,7 +27,7 @@ export class MenuPositionService {
     });
     if (existedPosition) {
       return new BadRequestException(
-        `Menu Position with name '${existedPosition.name}' has already existed`,
+        `Menu-Position with name '${existedPosition.name}' has already existed`,
       );
     }
     const existedPoint = await this.pointRepository.findOne({
