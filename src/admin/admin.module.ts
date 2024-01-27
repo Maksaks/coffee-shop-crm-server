@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BaristaModule } from 'src/barista/barista.module';
+import { Barista } from 'src/barista/entities/barista.entity';
 import { CategoriesModule } from 'src/categories/categories.module';
 import { IngredientsModule } from 'src/ingredients/ingredients.module';
 import { MailerSenderModule } from 'src/mailer/mailer.module';
@@ -17,7 +18,7 @@ import { Admin } from './entities/admin.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Admin]),
+    TypeOrmModule.forFeature([Admin, Barista]),
     CategoriesModule,
     BaristaModule,
     PointModule,

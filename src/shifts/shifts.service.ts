@@ -29,7 +29,7 @@ export class ShiftsService {
       })
     )?.barista.find((item) => item.id === baristaId);
     if (!isBaristaOnPoint) {
-      return new BadRequestException(
+      throw new BadRequestException(
         `Barista #${baristaId} does not have access to this point #${pointID}`,
       );
     }
@@ -47,8 +47,8 @@ export class ShiftsService {
         lastShift[0].status === ShiftStatus.StartOfWork.toString() &&
         lastShift[0].point.id !== pointID
       ) {
-        return new BadRequestException(
-          `Please end your shift at the point #${lastShift[0].point.id}`,
+        throw new BadRequestException(
+          `Please end your shift at the point [${lastShift[0].point.name}]`,
         );
       }
       if (
@@ -61,7 +61,7 @@ export class ShiftsService {
           baristaSalary: 0,
           barista: { id: baristaId },
         });
-      } else return new BadRequestException('Last shift hasn`t been ended');
+      } else throw new BadRequestException('Last shift hasn`t been ended');
     } else if (shiftStatus.toString() === ShiftStatus.EndOfWork.toString()) {
       const lastShift = await this.shiftRepository.find({
         where: {
@@ -72,7 +72,7 @@ export class ShiftsService {
         take: 1,
       });
       if (!lastShift.length)
-        return new BadRequestException(
+        throw new BadRequestException(
           'You can`t end of shift until you start it',
         );
       if (lastShift[0].status === ShiftStatus.StartOfWork.toString()) {
@@ -108,7 +108,7 @@ export class ShiftsService {
           barista: { id: baristaId },
         });
       } else
-        return new BadRequestException(
+        throw new BadRequestException(
           'You can`t end of shift until you start it',
         );
     }

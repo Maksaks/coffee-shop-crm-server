@@ -31,7 +31,7 @@ export class AuthService {
   async registrationAdmin(adminRegistrationDto: CreateAdminDto) {
     const newAdmin = await this.adminService.create(adminRegistrationDto);
     if (newAdmin instanceof BadRequestException) {
-      return newAdmin;
+      throw newAdmin;
     }
     const { id, name, email } = newAdmin as Admin;
 
@@ -51,13 +51,13 @@ export class AuthService {
     });
     const admin = await this.adminService.findOne(payload.id);
     if (admin instanceof BadRequestException) {
-      return admin;
+      throw admin;
     }
     const result = await this.adminService.update(admin?.id, {
       isEmailConfirmed: true,
     });
     if (result instanceof BadRequestException) {
-      return result;
+      throw result;
     }
     return `Email ${admin.email} was confirmed successfully `;
   }
@@ -71,11 +71,11 @@ export class AuthService {
         restorePasswordDto.email,
       );
       if (resultAdmin instanceof BadRequestException) {
-        return new BadRequestException('Account with this email was not found');
+        throw new BadRequestException('Account with this email was not found');
       } else {
         const { id, name, email } = resultAdmin;
         const token = await this.jwtService.signAsync({ id, name, email });
-        const confirmationURL = `${this.configService.get('CLIENT_URL')}/password/update/${token}`;
+        const confirmationURL = `${this.configService.get('CLIENT_URL')}/auth/change/${token}`;
         await this.mailerSenderService.sendConfirmUpdatingPasswordForAdmin(
           name,
           confirmationURL,
@@ -105,11 +105,11 @@ export class AuthService {
     });
     const admin = await this.adminService.findOne(payload.id);
     if (admin instanceof BadRequestException) {
-      return admin;
+      throw admin;
     }
     const result = await this.adminService.update(admin?.id, updatePasswordDto);
     if (result instanceof BadRequestException) {
-      return result;
+      throw result;
     }
 
     return `Password was successfully updated!`;
@@ -134,12 +134,19 @@ export class AuthService {
     }
     const isCorrectPassword = await argon2.verify(user.password, pass);
     if (user && isCorrectPassword) {
-      const { password, ...result } = user;
-      if (role == Roles.Barista) {
+      const { id, name, surname, email, password, ...result } = user;
+      if (role.toString() == Roles.Barista.toString()) {
         const barista = user as Barista;
-        return { ...result, role, adminID: barista.admin.id };
+        return {
+          id,
+          name,
+          surname,
+          email,
+          role,
+          admin: { id: barista.admin.id },
+        };
       }
-      return { ...result, role };
+      return { id, name, surname, email, role };
     }
     throw new UnauthorizedException('Email or password are incorrect');
   }

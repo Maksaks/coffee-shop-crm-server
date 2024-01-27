@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   Request,
   UseGuards,
@@ -22,6 +23,7 @@ import { PointsService } from 'src/points/points.service';
 import { ShiftStatus } from 'src/shifts/entities/shift.entity';
 import { ShiftsService } from 'src/shifts/shifts.service';
 import { BaristaService } from './barista.service';
+import { UpdateBaristaDto } from './dto/update-barista.dto';
 
 @Controller('barista')
 export class BaristaController {
@@ -32,6 +34,19 @@ export class BaristaController {
     private readonly ingredientService: IngredientsService,
     private readonly pointService: PointsService,
   ) {}
+
+  @Patch()
+  @AllowedRoles(Roles.Barista)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UsePipes(new ValidationPipe())
+  updateBarista(@Request() req, @Body() updateBaristaDto: UpdateBaristaDto) {
+    return this.baristaService.update(
+      req.user.id,
+      req.user.admin.id,
+      updateBaristaDto,
+    );
+  }
+
   @Post('orders')
   @AllowedRoles(Roles.Barista)
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -131,6 +146,16 @@ export class BaristaController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   getInfoAboutMe(@Request() req) {
     return this.baristaService.getInfoAboutMeDuringLastMonth(
+      req.user.id,
+      req.user.admin.id,
+    );
+  }
+
+  @Get('points')
+  @AllowedRoles(Roles.Barista)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  getMyPoints(@Request() req) {
+    return this.pointService.findPointsByBaristaID(
       req.user.id,
       req.user.admin.id,
     );

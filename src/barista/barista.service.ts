@@ -2,6 +2,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as argon2 from 'argon2';
+import { Admin } from 'src/admin/entities/admin.entity';
 import { getMonthBefore } from 'src/helpers/GetingDate.helper';
 import { MailerSenderService } from 'src/mailer/mailer.service';
 import { Point } from 'src/points/entities/points.entity';
@@ -16,6 +17,8 @@ export class BaristaService {
   constructor(
     @InjectRepository(Barista)
     private readonly baristaRepository: Repository<Barista>,
+    @InjectRepository(Admin)
+    private readonly adminRepository: Repository<Admin>,
     @InjectRepository(Shift)
     private readonly shiftRepository: Repository<Shift>,
     @InjectRepository(Point)
@@ -23,15 +26,7 @@ export class BaristaService {
     private readonly mailerService: MailerSenderService,
   ) {}
   async create(adminID: number, createBaristaDto: CreateBaristaDto) {
-    const exsitedBarista = await this.baristaRepository.findOne({
-      where: {
-        email: createBaristaDto.email,
-      },
-    });
-    if (exsitedBarista)
-      return new BadRequestException(
-        `Barista with email ${createBaristaDto.email} has already existed`,
-      );
+    await this.checkEmailUnique(createBaristaDto.email);
     await this.mailerService.sendEmailWithLoginData(
       createBaristaDto.surname + ' ' + createBaristaDto.name,
       createBaristaDto.email,
@@ -97,19 +92,13 @@ export class BaristaService {
       updateBaristaDto.email &&
       updateBaristaDto.email !== exsitedBarista.email
     ) {
-      const uniqueEmail = await this.baristaRepository.findOne({
-        where: { email: updateBaristaDto.email, admin: { id: adminID } },
-      });
-      if (uniqueEmail)
-        return new BadRequestException(
-          `Barista with email ${updateBaristaDto.email}`,
-        );
+      await this.checkEmailUnique(updateBaristaDto.email);
       if (!updateBaristaDto.password)
         await this.mailerService.sendEmailAboutUpdatingLoginData(
           exsitedBarista.surname + ' ' + exsitedBarista.name,
           exsitedBarista.email,
-          'Password was changed. Use last one.',
-          exsitedBarista.email,
+          'Password wasn`t changed. Use last one.',
+          updateBaristaDto.email,
         );
     }
     if (updateBaristaDto.password) {
@@ -175,6 +164,7 @@ export class BaristaService {
   async getInfoAboutMeDuringLastMonth(baristaID: number, adminID: number) {
     const { password, ...baristaMe } = await this.baristaRepository.findOne({
       where: { id: baristaID, admin: { id: adminID } },
+      relations: { points: true },
     });
     const shiftsMe = await this.shiftRepository.find({
       where: {
@@ -193,5 +183,19 @@ export class BaristaService {
       totalShiftsSalary,
       shifts: shiftsMe,
     };
+  }
+
+  async checkEmailUnique(email: string) {
+    const existedBarista = await this.baristaRepository.findOne({
+      where: { email },
+    });
+    const existedAdmin = await this.adminRepository.findOne({
+      where: { email },
+    });
+    if (existedBarista || existedAdmin) {
+      throw new BadRequestException(
+        `Account with email ${email} has already been existed`,
+      );
+    }
   }
 }

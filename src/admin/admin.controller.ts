@@ -40,7 +40,6 @@ import { UpdateDiscountDto } from 'src/position-discount/dto/update-discount.dto
 import { PositionDiscountService } from 'src/position-discount/position-discount.service';
 import { ShiftsService } from 'src/shifts/shifts.service';
 import { AdminService } from './admin.service';
-import { CreateAdminDto } from './dto/create-admin.dto';
 
 @Controller('admin')
 export class AdminController {
@@ -57,12 +56,12 @@ export class AdminController {
     private readonly orderPositionService: OrderPositionService,
   ) {}
 
-  @Post()
+  @Patch()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @AllowedRoles(Roles.Admin)
   @UsePipes(new ValidationPipe())
-  createAdmin(@Body() createAdminDto: CreateAdminDto) {
-    return this.adminService.create(createAdminDto);
+  createAdmin(@Request() req, @Body() updateAdminDto: UpdateBaristaDto) {
+    return this.adminService.update(req.user.id, updateAdminDto);
   }
 
   @Post('categories')

@@ -34,17 +34,15 @@ export class PointsService {
   }
 
   async findPointsByBaristaID(baristaID: number, adminID: number) {
-    const existedPoint = await this.pointRepository.find({
+    const existedPoints = await this.pointRepository.find({
       where: { barista: { id: baristaID }, admin: { id: adminID } },
     });
-    if (!existedPoint.length) {
+    if (!existedPoints.length) {
       return new BadRequestException(
         `Points for Barista #${baristaID} were not found`,
       );
     }
-    return await this.pointRepository.find({
-      where: { barista: { id: baristaID } },
-    });
+    return existedPoints;
   }
 
   async findAll(adminID: number) {
@@ -82,20 +80,17 @@ export class PointsService {
   async findByBaristaAndPoint(id: number, baristaID: number, adminID: number) {
     const existedPoint = await this.pointRepository.findOne({
       where: { id, barista: { id: baristaID }, admin: { id: adminID } },
-    });
-    if (!existedPoint) {
-      return new BadRequestException(`Point #${id} was not found`);
-    }
-    return await this.pointRepository.findOne({
-      where: { id },
       relations: {
-        barista: true,
         ingredients: true,
         orders: true,
         shifts: true,
         menuPositions: true,
       },
     });
+    if (!existedPoint) {
+      return new BadRequestException(`Point #${id} was not found`);
+    }
+    return existedPoint;
   }
 
   async update(id: number, updatePointDto: UpdatePointDto, adminID: number) {
