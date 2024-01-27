@@ -38,7 +38,7 @@ export class PointsService {
       where: { barista: { id: baristaID }, admin: { id: adminID } },
     });
     if (!existedPoints.length) {
-      return new BadRequestException(
+      throw new BadRequestException(
         `Points for Barista #${baristaID} were not found`,
       );
     }
@@ -63,7 +63,7 @@ export class PointsService {
       where: { id, admin: { id: adminID } },
     });
     if (!existedPoint) {
-      return new BadRequestException(`Point #${id} was not found`);
+      throw new BadRequestException(`Point #${id} was not found`);
     }
     return await this.pointRepository.findOne({
       where: { id },
@@ -88,7 +88,7 @@ export class PointsService {
       },
     });
     if (!existedPoint) {
-      return new BadRequestException(`Point #${id} was not found`);
+      throw new BadRequestException(`Point #${id} was not found`);
     }
     return existedPoint;
   }
@@ -98,7 +98,7 @@ export class PointsService {
       where: { id, admin: { id: adminID } },
     });
     if (!existedPoint) {
-      return new BadRequestException(`Point #${id} was not found`);
+      throw new BadRequestException(`Point #${id} was not found`);
     }
     return await this.pointRepository.update(id, updatePointDto);
   }
@@ -108,7 +108,7 @@ export class PointsService {
       where: { id, admin: { id: adminID } },
     });
     if (!existedPoint) {
-      return new BadRequestException(`Point #${id} was not found`);
+      throw new BadRequestException(`Point #${id} was not found`);
     }
     existedPoint.barista = [];
     await this.pointRepository.save(existedPoint);
@@ -124,13 +124,13 @@ export class PointsService {
       where: { id: pointId, barista: { id: baristaId } },
     });
     if (!existedPoint) {
-      return new BadRequestException(`Point #${pointId} was not found`);
+      throw new BadRequestException(`Point #${pointId} was not found`);
     }
     if (amount < 0) {
       amount = amount * -1;
     }
     if (existedPoint.pointMoney < amount) {
-      return new BadRequestException(`Not enough cash at the point`);
+      throw new BadRequestException(`Not enough cash at the point`);
     }
     existedPoint.pointMoney = existedPoint.pointMoney - amount;
     return await this.pointRepository.save(existedPoint);
@@ -140,7 +140,7 @@ export class PointsService {
       where: { id: pointId, barista: { id: baristaId } },
     });
     if (!existedPoint) {
-      return new BadRequestException(`Point #${pointId} was not found`);
+      throw new BadRequestException(`Point #${pointId} was not found`);
     }
     if (amount < 0) {
       amount = amount * -1;
@@ -155,7 +155,7 @@ export class PointsService {
       where: { point: { id: pointID } },
     });
     if (!existedPointIngredients) {
-      return new BadRequestException(
+      throw new BadRequestException(
         `Ingredients on point #${pointID} was not found`,
       );
     }

@@ -70,7 +70,7 @@ export class BaristaService {
       relations: { admin: true },
     });
     if (!existedBarista) {
-      return new BadRequestException(
+      throw new BadRequestException(
         `Barista with email ${email} was not found`,
       );
     }
@@ -86,7 +86,7 @@ export class BaristaService {
       where: { id: id, admin: { id: adminID } },
     });
     if (!exsitedBarista)
-      return new BadRequestException(`No Barista with #${id}`);
+      throw new BadRequestException(`No Barista with #${id}`);
 
     if (
       updateBaristaDto.email &&
@@ -118,7 +118,7 @@ export class BaristaService {
       where: { id: id, admin: { id: adminID } },
     });
     if (!exsitedBarista)
-      return new BadRequestException(`No Barista with #${id}`);
+      throw new BadRequestException(`No Barista with #${id}`);
     return await this.baristaRepository.delete(id);
   }
 
@@ -131,12 +131,12 @@ export class BaristaService {
       where: { id: pointId, admin: { id: adminID } },
     });
     if (!barista || !point) {
-      return new BadRequestException(
+      throw new BadRequestException(
         'Check input date, one or both entities are not exist',
       );
     }
     if (barista.points.find((point) => point.id == pointId)) {
-      return new BadRequestException(
+      throw new BadRequestException(
         `Point with #${pointId} has already included in this barista`,
       );
     }
@@ -153,7 +153,7 @@ export class BaristaService {
       relations: { points: true },
     });
     if (!barista) {
-      return new BadRequestException(
+      throw new BadRequestException(
         'Check input date, one or both entities are not exist',
       );
     }

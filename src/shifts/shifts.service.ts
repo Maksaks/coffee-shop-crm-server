@@ -135,7 +135,7 @@ export class ShiftsService {
       },
     });
     if (!shifts.length) {
-      return new BadRequestException(`Shifts for Point #${id} weren\`t found`);
+      throw new BadRequestException(`Shifts for Point #${id} weren\`t found`);
     }
     return shifts;
   }
@@ -149,7 +149,7 @@ export class ShiftsService {
       },
     });
     if (!shifts.length) {
-      return new BadRequestException(`Shifts were not found`);
+      throw new BadRequestException(`Shifts were not found`);
     }
     return shifts;
   }
@@ -164,7 +164,7 @@ export class ShiftsService {
       relations: { point: true },
     });
     if (!lastShift.length) {
-      return new BadRequestException(
+      throw new BadRequestException(
         `First shift of barista #${baristaID} has not started yet`,
       );
     }
@@ -202,7 +202,7 @@ export class ShiftsService {
       });
     }
     if (!shifts.length) {
-      return new BadRequestException(`Shifts were not found`);
+      throw new BadRequestException(`Shifts were not found`);
     }
     const totalBaristaSalary = shifts.reduce(
       (acc, cur) => acc + cur.baristaSalary,
@@ -247,7 +247,7 @@ export class ShiftsService {
       };
     });
     if (!shifts.length) {
-      return new BadRequestException(`Shifts were not found`);
+      throw new BadRequestException(`Shifts were not found`);
     }
     const totalData = [];
     for (const barista of baristas) {

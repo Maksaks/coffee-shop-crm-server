@@ -34,12 +34,12 @@ export class OrdersService {
       take: 1,
     });
     if (!currentShift.length) {
-      return new BadRequestException('Shifts for this barista were not found');
+      throw new BadRequestException('Shifts for this barista were not found');
     }
     if (
       currentShift[0].status.toString() === ShiftStatus.EndOfWork.toString()
     ) {
-      return new BadRequestException('First, you need to start the shift!');
+      throw new BadRequestException('First, you need to start the shift!');
     }
     const costOfIngredients = await this.recipeService.getCostOfIngredientsList(
       createOrderDto.point.id,
@@ -73,7 +73,7 @@ export class OrdersService {
       createOrderDto.orderList,
     );
 
-    return newOrder;
+    throw newOrder;
   }
 
   async findAll(adminID: number) {
@@ -82,7 +82,7 @@ export class OrdersService {
       relations: { point: true, barista: true, orderList: true },
     });
     if (!allOrders.length) {
-      return new BadRequestException('Orders were not found');
+      throw new BadRequestException('Orders were not found');
     }
     return allOrders;
   }
@@ -92,7 +92,7 @@ export class OrdersService {
       where: { point: { id: pointID, admin: { id: adminID } } },
     });
     if (!existedOrderForPoint.length) {
-      return new BadRequestException(
+      throw new BadRequestException(
         `Orders for Point #${pointID} were not found`,
       );
     }
@@ -113,12 +113,12 @@ export class OrdersService {
       take: 1,
     });
     if (!currentShift.length) {
-      return new BadRequestException('Shifts for this barista were not found');
+      throw new BadRequestException('Shifts for this barista were not found');
     }
     if (
       currentShift[0].status.toString() === ShiftStatus.EndOfWork.toString()
     ) {
-      return new BadRequestException('First, you need to start the shift!');
+      throw new BadRequestException('First, you need to start the shift!');
     }
     const currentShiftOrders = await this.orderRepository.find({
       where: {
@@ -129,7 +129,7 @@ export class OrdersService {
     });
 
     if (!currentShiftOrders.length) {
-      return new BadRequestException('Orders for current shift were not found');
+      throw new BadRequestException('Orders for current shift were not found');
     }
     return currentShiftOrders;
   }
@@ -176,7 +176,7 @@ export class OrdersService {
       where: { id, point: { admin: { id: adminID } } },
     });
     if (!existedOrder) {
-      return new BadRequestException(`Order with #${id} was not found`);
+      throw new BadRequestException(`Order with #${id} was not found`);
     }
     return await this.orderRepository.findOne({
       where: { id },
@@ -189,7 +189,7 @@ export class OrdersService {
       where: { id: orderID, point: { admin: { id: adminID } } },
     });
     if (!existedOrder) {
-      return new BadRequestException(`Order with #${orderID} was not found`);
+      throw new BadRequestException(`Order with #${orderID} was not found`);
     }
     existedOrder.status = OrderStatus.Ready;
     return await this.orderRepository.save(existedOrder);
@@ -206,7 +206,7 @@ export class OrdersService {
       },
     });
     if (!existedOrder.length) {
-      return new BadRequestException(
+      throw new BadRequestException(
         `Orders on today by Barista #${baristaID} were not found`,
       );
     }
@@ -219,7 +219,7 @@ export class OrdersService {
       where: { id, barista: { admin: { id: adminID } } },
     });
     if (!existedOrderForPoint) {
-      return new BadRequestException(`Order with #${id} was not found`);
+      throw new BadRequestException(`Order with #${id} was not found`);
     }
     return await this.orderRepository.delete(id);
   }
