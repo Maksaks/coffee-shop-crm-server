@@ -38,7 +38,7 @@ export class PointsService {
       where: { barista: { id: baristaID }, admin: { id: adminID } },
     });
     if (!existedPoints.length) {
-      throw new BadRequestException(
+      return new BadRequestException(
         `Points for Barista #${baristaID} were not found`,
       );
     }

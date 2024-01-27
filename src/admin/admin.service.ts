@@ -49,7 +49,7 @@ export class AdminService {
       where: { email },
     });
     if (!existedAdmin) {
-      throw new BadRequestException(`Admin hasn\`t already existed`);
+      return new BadRequestException(`Admin hasn\`t already existed`);
     }
     return existedAdmin;
   }

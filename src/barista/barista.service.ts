@@ -70,7 +70,7 @@ export class BaristaService {
       relations: { admin: true },
     });
     if (!existedBarista) {
-      throw new BadRequestException(
+      return new BadRequestException(
         `Barista with email ${email} was not found`,
       );
     }
@@ -196,6 +196,26 @@ export class BaristaService {
       throw new BadRequestException(
         `Account with email ${email} has already been existed`,
       );
+    }
+  }
+
+  async getLastShiftPoint(baristaID: number, adminID: number) {
+    const lastShift = await this.shiftRepository.find({
+      where: {
+        barista: { id: baristaID },
+        point: { admin: { id: adminID } },
+      },
+      relations: { point: true },
+      order: { id: 'DESC' },
+      take: 1,
+    });
+    if (!lastShift.length) {
+      return '-1';
+    }
+    if (lastShift[0].status.toString() === ShiftStatus.StartOfWork.toString()) {
+      return lastShift[0].point.id.toString();
+    } else {
+      return '-1';
     }
   }
 }

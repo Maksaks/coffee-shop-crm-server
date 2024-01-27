@@ -151,6 +151,16 @@ export class BaristaController {
     );
   }
 
+  @Get('lastpoint')
+  @AllowedRoles(Roles.Barista)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  getLastShiftPoint(@Request() req) {
+    return this.baristaService.getLastShiftPoint(
+      req.user.id,
+      req.user.admin.id,
+    );
+  }
+
   @Get('points')
   @AllowedRoles(Roles.Barista)
   @UseGuards(JwtAuthGuard, RolesGuard)
