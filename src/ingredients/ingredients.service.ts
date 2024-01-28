@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Point } from 'src/points/entities/points.entity';
+import { Shift, ShiftStatus } from 'src/shifts/entities/shift.entity';
 import { Repository } from 'typeorm';
 import { CreateIngredientDto } from './dto/create-ingredient.dto';
 import { UpdateIngredientDto } from './dto/update-ingredient.dto';
@@ -13,6 +14,8 @@ export class IngredientsService {
     private readonly ingredientRepository: Repository<Ingredient>,
     @InjectRepository(Point)
     private readonly pointRepository: Repository<Point>,
+    @InjectRepository(Shift)
+    private readonly shiftRepository: Repository<Shift>,
   ) {}
   async create(
     createIngredientDro: CreateIngredientDto,
@@ -59,6 +62,41 @@ export class IngredientsService {
     }
     return existedIngredient;
   }
+
+  async findAllOnPointForBarista(baristaID: number, adminID: number) {
+    let lastShiftPointID: number;
+    const lastShift = await this.shiftRepository.find({
+      where: {
+        barista: { id: baristaID },
+        point: { admin: { id: adminID } },
+      },
+      relations: { point: true },
+      order: { id: 'DESC' },
+      take: 1,
+    });
+    if (lastShift[0].status.toString() === ShiftStatus.StartOfWork.toString()) {
+      lastShiftPointID = lastShift[0].point.id;
+    }
+    if (!lastShiftPointID)
+      throw new BadRequestException(`No ingredients on this Point`);
+    const existedIngredient = await this.ingredientRepository.find({
+      where: {
+        point: {
+          id: lastShiftPointID,
+          barista: { id: baristaID },
+          admin: { id: adminID },
+        },
+      },
+      order: {
+        quantity: 'ASC',
+      },
+    });
+    if (!existedIngredient.length) {
+      throw new BadRequestException(`No ingredients on this Point`);
+    }
+    return existedIngredient;
+  }
+
   async findOneByID(id: number, adminID: number) {
     const existedIngredient = await this.ingredientRepository.findOne({
       where: {

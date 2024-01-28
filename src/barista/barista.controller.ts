@@ -86,6 +86,17 @@ export class BaristaController {
     );
   }
 
+  @Get('ingredients')
+  @AllowedRoles(Roles.Barista)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UsePipes()
+  getAllIngredientsOnPoint(@Request() req) {
+    return this.ingredientService.findAllOnPointForBarista(
+      req.user.id,
+      req.user.admin.id,
+    );
+  }
+
   @Post('ingredients/:ingredientID/onPoint/:pointID')
   @AllowedRoles(Roles.Barista)
   @UseGuards(JwtAuthGuard, RolesGuard)

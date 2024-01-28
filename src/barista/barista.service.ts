@@ -93,8 +93,14 @@ export class BaristaService {
       await this.checkEmailUnique(updateBaristaDto.email);
       if (!updateBaristaDto.password)
         await this.mailerService.sendEmailAboutUpdatingLoginData(
-          exsitedBarista.surname + ' ' + exsitedBarista.name,
-          exsitedBarista.email,
+          (updateBaristaDto.surname
+            ? updateBaristaDto.surname
+            : exsitedBarista.surname) +
+            ' ' +
+            (updateBaristaDto.name
+              ? updateBaristaDto.name
+              : exsitedBarista.name),
+          updateBaristaDto.email,
           'Password wasn`t changed. Use last one.',
           updateBaristaDto.email,
         );
@@ -171,6 +177,7 @@ export class BaristaService {
         status: ShiftStatus.EndOfWork,
         time: Between(getMonthBefore(), new Date()),
       },
+      relations: { point: true },
     });
     const totalShiftsSalary = shiftsMe.reduce(
       (acc, cur) => acc + cur.baristaSalary,

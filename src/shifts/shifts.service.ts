@@ -43,7 +43,9 @@ export class ShiftsService {
         order: { id: 'DESC' },
         take: 1,
       });
+
       if (
+        lastShift.length &&
         lastShift[0].status === ShiftStatus.StartOfWork.toString() &&
         lastShift[0].point.id !== pointID
       ) {
