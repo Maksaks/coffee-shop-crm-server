@@ -9,9 +9,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { CreateAdminDto } from 'src/admin/dto/create-admin.dto';
-import { MailerSenderService } from 'src/mailer/mailer.service';
 import { AuthService } from './auth.service';
 import { RestorePasswordDto } from './dto/restore-password.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
@@ -20,11 +18,7 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
 
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly mailersSenderService: MailerSenderService,
-    private readonly jwtService: JwtService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Post('registration')
   @UsePipes(new ValidationPipe())
@@ -61,6 +55,6 @@ export class AuthController {
   @Get('profile')
   @UseGuards(JwtAuthGuard)
   getProfile(@Request() req) {
-    return req.user;
+    return this.authService.getProfile(req.user);
   }
 }

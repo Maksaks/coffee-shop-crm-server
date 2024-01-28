@@ -55,13 +55,11 @@ export class BaristaService {
   async findOne(id: number, adminID: number) {
     const exsitedBarista = await this.baristaRepository.findOne({
       where: { id, admin: { id: adminID } },
+      relations: { points: true, shifts: true, orders: true },
     });
     if (!exsitedBarista)
       return new BadRequestException(`No barista with #${id}`);
-    return await this.baristaRepository.findOne({
-      where: { id },
-      relations: { points: true, shifts: true, orders: true },
-    });
+    return exsitedBarista;
   }
 
   async findOneByEmail(email: string) {
@@ -210,12 +208,12 @@ export class BaristaService {
       take: 1,
     });
     if (!lastShift.length) {
-      return '-1';
+      return null;
     }
     if (lastShift[0].status.toString() === ShiftStatus.StartOfWork.toString()) {
-      return lastShift[0].point.id.toString();
+      return { ...lastShift[0].point };
     } else {
-      return '-1';
+      return null;
     }
   }
 }

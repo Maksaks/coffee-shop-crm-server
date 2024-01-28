@@ -16,6 +16,7 @@ import { Roles } from 'src/enums/Roles.enum';
 import { MailerSenderService } from 'src/mailer/mailer.service';
 import { RestorePasswordDto } from './dto/restore-password.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { AuthUserData } from './types/AuthUserData.types';
 import { UserData } from './types/UserData.types';
 
 @Injectable()
@@ -155,5 +156,32 @@ export class AuthService {
       ...user,
       token: this.jwtService.sign(user),
     };
+  }
+
+  async getProfile(user: AuthUserData) {
+    if (user.role.toString() == 'barista') {
+      let result;
+      const lastPoint = await this.baristaService.getLastShiftPoint(
+        user.id,
+        user.admin.id,
+      );
+      if (!lastPoint) {
+        const barista = await this.baristaService.findOne(
+          user.id,
+          user?.admin.id,
+        );
+        if (barista instanceof BadRequestException) {
+          throw result;
+        } else {
+          const { points } = barista;
+          result = { points };
+        }
+      }
+      return { ...user, lastPoint, ...result };
+    } else if (user.role.toString() == 'admin') {
+      return user;
+    } else {
+      throw new UnauthorizedException('Unauthorized!Try again');
+    }
   }
 }
