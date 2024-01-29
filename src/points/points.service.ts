@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Ingredient } from 'src/ingredients/entities/ingredient.entity';
 import { OrderPosition } from 'src/order-position/entities/order-position.entity';
 import { Recipe } from 'src/recipe/entities/recipe.entity';
+import { Shift, ShiftStatus } from 'src/shifts/entities/shift.entity';
 import { Repository } from 'typeorm';
 import { CreatePointDto } from './dto/create-point.dto';
 import { UpdatePointDto } from './dto/update-point.dto';
@@ -17,6 +18,8 @@ export class PointsService {
     private readonly recipeRepository: Repository<Recipe>,
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
+    @InjectRepository(Shift)
+    private readonly shiftRepository: Repository<Shift>,
   ) {}
   async create(adminID: number, createPointDto: CreatePointDto) {
     const existedPoint = await this.pointRepository.findOne({
@@ -77,18 +80,31 @@ export class PointsService {
     });
   }
 
-  async findByBaristaAndPoint(id: number, baristaID: number, adminID: number) {
+  async findByBaristaAndPoint(baristaID: number, adminID: number) {
+    let lastShiftPointID: number;
+    const lastShift = await this.shiftRepository.find({
+      where: {
+        barista: { id: baristaID },
+        point: { admin: { id: adminID } },
+      },
+      relations: { point: true },
+      order: { id: 'DESC' },
+      take: 1,
+    });
+    if (lastShift[0].status.toString() === ShiftStatus.StartOfWork.toString()) {
+      lastShiftPointID = lastShift[0].point.id;
+    }
+    if (!lastShiftPointID)
+      throw new BadRequestException(`No menu positions on this Point`);
     const existedPoint = await this.pointRepository.findOne({
-      where: { id, barista: { id: baristaID }, admin: { id: adminID } },
-      relations: {
-        ingredients: true,
-        orders: true,
-        shifts: true,
-        menuPositions: true,
+      where: {
+        id: lastShiftPointID,
+        barista: { id: baristaID },
+        admin: { id: adminID },
       },
     });
     if (!existedPoint) {
-      throw new BadRequestException(`Point #${id} was not found`);
+      throw new BadRequestException(`Point #${lastShiftPointID} was not found`);
     }
     return existedPoint;
   }

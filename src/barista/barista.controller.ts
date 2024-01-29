@@ -127,7 +127,7 @@ export class BaristaController {
     );
   }
 
-  @Get('points/:pointID/takeMoney')
+  @Post('points/:pointID/takeMoney')
   @UsePipes(new ValidationPipe())
   @AllowedRoles(Roles.Barista)
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -143,12 +143,11 @@ export class BaristaController {
     );
   }
 
-  @Get('points/:pointID')
+  @Get('points')
   @AllowedRoles(Roles.Barista)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  getPointInfo(@Param('pointID') pointID: number, @Request() req) {
+  getPointInfo(@Request() req) {
     return this.pointService.findByBaristaAndPoint(
-      pointID,
       req.user.id,
       req.user.admin.id,
     );
