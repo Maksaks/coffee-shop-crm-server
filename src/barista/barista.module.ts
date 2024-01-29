@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Admin } from 'src/admin/entities/admin.entity';
 import { IngredientsModule } from 'src/ingredients/ingredients.module';
 import { MailerSenderModule } from 'src/mailer/mailer.module';
+import { MenuPositionModule } from 'src/menu-position/menu-position.module';
 import { OrdersModule } from 'src/orders/orders.module';
 import { Point } from 'src/points/entities/points.entity';
 import { PointModule } from 'src/points/points.module';
@@ -20,6 +21,7 @@ import { Barista } from './entities/barista.entity';
     IngredientsModule,
     PointModule,
     MailerSenderModule,
+    MenuPositionModule,
   ],
   controllers: [BaristaController],
   providers: [BaristaService],

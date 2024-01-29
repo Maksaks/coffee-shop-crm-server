@@ -16,6 +16,7 @@ import { AllowedRoles } from 'src/decorators/roles.decorator';
 import { Roles } from 'src/enums/roles.enum';
 import { AddIngredientDto } from 'src/ingredients/dto/add-ingredient.dto';
 import { IngredientsService } from 'src/ingredients/ingredients.service';
+import { MenuPositionService } from 'src/menu-position/menu-position.service';
 import { CreateOrderDto } from 'src/orders/dto/create-order.dto';
 import { OrdersService } from 'src/orders/orders.service';
 import { TakeMoneyDto } from 'src/points/dto/take-money.dto';
@@ -33,6 +34,7 @@ export class BaristaController {
     private readonly shiftService: ShiftsService,
     private readonly ingredientService: IngredientsService,
     private readonly pointService: PointsService,
+    private readonly menuPositionService: MenuPositionService,
   ) {}
 
   @Patch()
@@ -44,6 +46,16 @@ export class BaristaController {
       req.user.id,
       req.user.admin.id,
       updateBaristaDto,
+    );
+  }
+
+  @Get('menu')
+  @AllowedRoles(Roles.Barista)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  getMenu(@Request() req) {
+    return this.menuPositionService.getMenuByBaristaID(
+      req.user.id,
+      req.user.admin.id,
     );
   }
 

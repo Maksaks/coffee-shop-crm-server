@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Point } from 'src/points/entities/points.entity';
 import { Recipe } from 'src/recipe/entities/recipe.entity';
+import { Shift, ShiftStatus } from 'src/shifts/entities/shift.entity';
 import { Repository } from 'typeorm';
 import { CreatePositionDto } from './dto/create-position.dto';
 import { UpdatePositionDto } from './dto/update-position.dto';
@@ -16,6 +17,8 @@ export class MenuPositionService {
     private readonly recipeRepository: Repository<Recipe>,
     @InjectRepository(Point)
     private readonly pointRepository: Repository<Point>,
+    @InjectRepository(Shift)
+    private readonly shiftRepository: Repository<Shift>,
   ) {}
   async create(
     menuPositionCreateDto: CreatePositionDto,
@@ -69,7 +72,7 @@ export class MenuPositionService {
       recipe: recipe,
     });
     await this.recipeRepository.save({ ...recipe, menuPosition: newPosition });
-    throw newPosition;
+    return newPosition;
   }
 
   async getMenu(pointID: number, adminID: number) {
@@ -90,6 +93,42 @@ export class MenuPositionService {
     });
     return existedMenuPositions;
   }
+
+  async getMenuByBaristaID(baristaID: number, adminID: number) {
+    let lastShiftPointID: number;
+    const lastShift = await this.shiftRepository.find({
+      where: {
+        barista: { id: baristaID },
+        point: { admin: { id: adminID } },
+      },
+      relations: { point: true },
+      order: { id: 'DESC' },
+      take: 1,
+    });
+    if (lastShift[0].status.toString() === ShiftStatus.StartOfWork.toString()) {
+      lastShiftPointID = lastShift[0].point.id;
+    }
+    if (!lastShiftPointID)
+      throw new BadRequestException(`No menu positions on this Point`);
+
+    let existedMenuPositions = await this.menuPositionRepository.find({
+      where: { point: { id: lastShiftPointID, admin: { id: adminID } } },
+      relations: { category: true, recipe: true, discount: true },
+    });
+    if (!existedMenuPositions.length) {
+      throw new BadRequestException(
+        `Any menu position on this point was not found`,
+      );
+    }
+    existedMenuPositions = existedMenuPositions.map((pos) => {
+      if (pos.discount && pos.discount.endAt < new Date()) {
+        pos.discount = null;
+      }
+      return pos;
+    });
+    return existedMenuPositions;
+  }
+
   async findOne(id: number, pointID: number, adminID: number) {
     const existedPosition = await this.menuPositionRepository.findOne({
       where: { id, point: { id: pointID, admin: { id: adminID } } },
