@@ -45,7 +45,6 @@ export class OrdersService {
       createOrderDto.point.id,
       createOrderDto.orderList,
     );
-
     const orderPositions = await this.orderPositionService.create(
       createOrderDto.orderList,
     );
@@ -61,7 +60,7 @@ export class OrdersService {
       relations: { orderList: true, point: true, barista: true },
     });
 
-    if (newOrder.paymentMethod === PaymentMethod.ByCash.toString()) {
+    if (newOrder.paymentMethod.toString() === PaymentMethod.ByCash.toString()) {
       await this.pointService.putMoneyOnBalance(
         newOrder.point.id,
         baristaID,
@@ -73,7 +72,7 @@ export class OrdersService {
       createOrderDto.orderList,
     );
 
-    throw newOrder;
+    return newOrder;
   }
 
   async findAll(adminID: number) {
@@ -126,6 +125,7 @@ export class OrdersService {
         point: { id: currentShift[0].point.id },
         createdAt: Between(currentShift[0].time, new Date()),
       },
+      relations: { orderList: true },
     });
 
     if (!currentShiftOrders.length) {

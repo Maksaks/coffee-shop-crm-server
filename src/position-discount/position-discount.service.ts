@@ -23,7 +23,7 @@ export class PositionDiscountService {
       where: { id: positionID, point: { admin: { id: adminID } } },
     });
     if (!existedMenuPosition) {
-      return new BadRequestException(
+      throw new BadRequestException(
         `Any position #${positionID} was not found`,
       );
     }
@@ -51,7 +51,7 @@ export class PositionDiscountService {
       ...existedMenuPosition,
       discount: newDiscount,
     });
-    throw newDiscount;
+    return newDiscount;
   }
 
   async findAll(adminID: number) {

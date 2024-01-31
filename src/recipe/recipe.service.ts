@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OrderPosition } from 'src/order-position/entities/order-position.entity';
 import { Repository } from 'typeorm';
@@ -14,6 +14,10 @@ export class RecipeService {
     pointID: number,
     orderPosition: OrderPosition[],
   ) {
+    if (!orderPosition.length)
+      throw new BadRequestException(
+        'To create an order you need to select one or more position',
+      );
     const allPositionsID = orderPosition.map((item) => item.menuPosition.id);
     const allRecipesOnPoint = await this.recipeRepository.find({
       where: { menuPosition: { point: { id: pointID } } },

@@ -38,12 +38,12 @@ export class MenuPosition {
   orderPositions: OrderPosition[];
   @OneToOne(() => PositionDiscount, (discount) => discount.menuPosition, {
     onDelete: 'SET NULL',
+    eager: true,
   })
   @JoinColumn({ name: 'discount_id' })
   discount: PositionDiscount;
   @ManyToOne(() => Category, (category) => category.positions, {
     onDelete: 'SET NULL',
-    eager: true,
   })
   category: Category;
   @ManyToOne(() => Point, (point) => point.menuPositions, {
