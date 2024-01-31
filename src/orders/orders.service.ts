@@ -112,12 +112,12 @@ export class OrdersService {
       take: 1,
     });
     if (!currentShift.length) {
-      throw new BadRequestException('Shifts for this barista were not found');
+      return new BadRequestException('Shifts for this barista were not found');
     }
     if (
       currentShift[0].status.toString() === ShiftStatus.EndOfWork.toString()
     ) {
-      throw new BadRequestException('First, you need to start the shift!');
+      return new BadRequestException('First, you need to start the shift!');
     }
     const currentShiftOrders = await this.orderRepository.find({
       where: {
@@ -126,10 +126,11 @@ export class OrdersService {
         createdAt: Between(currentShift[0].time, new Date()),
       },
       relations: { orderList: true },
+      order: { createdAt: 'DESC' },
     });
 
     if (!currentShiftOrders.length) {
-      throw new BadRequestException('Orders for current shift were not found');
+      return new BadRequestException('Orders for current shift were not found');
     }
     return currentShiftOrders;
   }

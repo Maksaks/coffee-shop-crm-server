@@ -106,7 +106,7 @@ export class ShiftsService {
         return await this.shiftRepository.save({
           status: shiftStatus,
           point: { id: pointID },
-          baristaSalary: totalBaristaSalary,
+          baristaSalary: Math.round(totalBaristaSalary),
           barista: { id: baristaId },
         });
       } else

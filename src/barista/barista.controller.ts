@@ -71,7 +71,7 @@ export class BaristaController {
   @AllowedRoles(Roles.Barista)
   @UseGuards(JwtAuthGuard, RolesGuard)
   completeOrder(@Param('orderID') orderID: number, @Request() req) {
-    return this.orderService.completeOrder(orderID, req.user.id);
+    return this.orderService.completeOrder(orderID, req.user.admin.id);
   }
 
   @Get('shift/start/:pointID')
