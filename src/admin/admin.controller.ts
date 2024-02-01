@@ -303,6 +303,13 @@ export class AdminController {
     );
   }
 
+  @Get('positions/points')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
+  getPointsForPositions(@Request() req) {
+    return this.pointService.findAllForPositions(req.user.id);
+  }
+
   @Get('positions/:pointID')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @AllowedRoles(Roles.Admin)

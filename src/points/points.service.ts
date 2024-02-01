@@ -61,6 +61,16 @@ export class PointsService {
     });
   }
 
+  async findAllForPositions(adminID: number) {
+    return await this.pointRepository.find({
+      where: { admin: { id: adminID } },
+      relations: {
+        ingredients: true,
+        menuPositions: true,
+      },
+    });
+  }
+
   async findOne(id: number, adminID: number) {
     const existedPoint = await this.pointRepository.findOne({
       where: { id, admin: { id: adminID } },

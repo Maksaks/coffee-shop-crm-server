@@ -43,7 +43,7 @@ export class MenuPositionService {
     if (!existedPoint) {
       throw new BadRequestException(`Point #${pointID} was not found`);
     }
-    if (menuPositionCreateDto.ingredients.length) {
+    if (menuPositionCreateDto.ingredients) {
       for (const ingredient of menuPositionCreateDto.ingredients) {
         if (
           !existedPoint.ingredients.find((item) => item.id === ingredient.id)
@@ -56,14 +56,18 @@ export class MenuPositionService {
     }
 
     const recipe = await this.recipeRepository.save({
-      ingredients: menuPositionCreateDto.ingredients.length
-        ? menuPositionCreateDto.ingredients.map((item) => {
-            return { id: item.id };
-          })
-        : [],
-      stepsToReproduce: menuPositionCreateDto.stepsToReproduce.length
-        ? menuPositionCreateDto.stepsToReproduce
-        : [],
+      ingredients:
+        menuPositionCreateDto.ingredients &&
+        menuPositionCreateDto.ingredients.length
+          ? menuPositionCreateDto.ingredients.map((item) => {
+              return { id: item.id };
+            })
+          : [],
+      stepsToReproduce:
+        menuPositionCreateDto.stepsToReproduce &&
+        menuPositionCreateDto.stepsToReproduce.length
+          ? menuPositionCreateDto.stepsToReproduce
+          : [],
     });
 
     const newPosition = await this.menuPositionRepository.save({
@@ -175,18 +179,6 @@ export class MenuPositionService {
     let ingredients;
     if (updatedMenuPositionDto.ingredients) {
       if (updatedMenuPositionDto.ingredients.length) {
-        for (const ingredient of recipe.ingredients) {
-          const ingredientFind = updatedMenuPositionDto.ingredients.find(
-            (item) => item.id == ingredient.id,
-          );
-          if (ingredientFind) {
-            updatedMenuPositionDto.ingredients =
-              updatedMenuPositionDto.ingredients.filter(
-                (item) => item.id != ingredientFind.id,
-              );
-          }
-        }
-
         for (const ingredient of updatedMenuPositionDto.ingredients) {
           if (
             !existedPoint.ingredients.find((item) => item.id === ingredient.id)
@@ -196,10 +188,7 @@ export class MenuPositionService {
             );
           }
         }
-        ingredients = [
-          ...recipe.ingredients,
-          ...updatedMenuPositionDto.ingredients,
-        ];
+        ingredients = [...updatedMenuPositionDto.ingredients];
       } else {
         ingredients = [];
       }
