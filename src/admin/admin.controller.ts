@@ -203,6 +203,14 @@ export class AdminController {
   getAllPoints(@Request() req) {
     return this.pointService.findAll(req.user.id);
   }
+
+  @Get('points/short')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
+  getAllPointShort(@Request() req) {
+    return this.pointService.getPointsWithOrders(req.user.id);
+  }
+
   @Get('points/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @AllowedRoles(Roles.Admin)

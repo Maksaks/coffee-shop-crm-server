@@ -61,6 +61,16 @@ export class PointsService {
     });
   }
 
+  async getPointsWithOrders(adminID: number) {
+    return await this.pointRepository.find({
+      where: { admin: { id: adminID } },
+      relations: {
+        orders: true,
+      },
+      select: { id: true, name: true, orders: true },
+    });
+  }
+
   async findAllForPositions(adminID: number) {
     return await this.pointRepository.find({
       where: { admin: { id: adminID } },
