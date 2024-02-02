@@ -4,7 +4,7 @@ import { getHourDifference } from 'src/helpers/GetHourDifference.helper';
 import { Order } from 'src/orders/entities/orders.entity';
 import { OrdersService } from 'src/orders/orders.service';
 import { Point } from 'src/points/entities/points.entity';
-import { Between, Repository } from 'typeorm';
+import { Between, LessThan, Repository } from 'typeorm';
 import { Shift, ShiftStatus } from './entities/shift.entity';
 
 @Injectable()
@@ -115,9 +115,37 @@ export class ShiftsService {
         );
     }
   }
+
+  async deleteShiftByID(id: number, adminID: number) {
+    const endShift = await this.shiftRepository.findOne({
+      where: {
+        id,
+        barista: { admin: { id: adminID } },
+        status: ShiftStatus.EndOfWork,
+      },
+      relations: { barista: true },
+    });
+    if (!endShift) {
+      throw new BadRequestException(`Shift with #${id} was not found`);
+    }
+    const startShift = await this.shiftRepository.find({
+      where: {
+        barista: { id: endShift.barista.id, admin: { id: adminID } },
+        status: ShiftStatus.StartOfWork,
+        time: LessThan(endShift.time),
+      },
+      order: { id: 'DESC' },
+      take: 1,
+    });
+    return await this.shiftRepository.remove([startShift[0], endShift]);
+  }
+
   async getAllShiftsByBarista(id: number, adminID: number) {
     const shifts = await this.shiftRepository.find({
-      where: { barista: { id, admin: { id: adminID } } },
+      where: {
+        status: ShiftStatus.EndOfWork,
+        barista: { id, admin: { id: adminID } },
+      },
       relations: {
         point: true,
       },

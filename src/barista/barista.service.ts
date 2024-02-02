@@ -52,6 +52,13 @@ export class BaristaService {
     });
   }
 
+  async findAllWithSelecting(adminID: number) {
+    return await this.baristaRepository.find({
+      where: { admin: { id: adminID } },
+      select: { id: true, name: true, surname: true },
+    });
+  }
+
   async findOne(id: number, adminID: number) {
     const exsitedBarista = await this.baristaRepository.findOne({
       where: { id, admin: { id: adminID } },

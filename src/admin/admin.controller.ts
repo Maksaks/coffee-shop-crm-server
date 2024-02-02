@@ -40,6 +40,7 @@ import { UpdateDiscountDto } from 'src/position-discount/dto/update-discount.dto
 import { PositionDiscountService } from 'src/position-discount/position-discount.service';
 import { ShiftsService } from 'src/shifts/shifts.service';
 import { AdminService } from './admin.service';
+import { UpdateAdminDto } from './dto/update-admin.dto';
 
 @Controller('admin')
 export class AdminController {
@@ -60,7 +61,7 @@ export class AdminController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @AllowedRoles(Roles.Admin)
   @UsePipes(new ValidationPipe())
-  createAdmin(@Request() req, @Body() updateAdminDto: UpdateBaristaDto) {
+  createAdmin(@Request() req, @Body() updateAdminDto: UpdateAdminDto) {
     return this.adminService.update(req.user.id, updateAdminDto);
   }
 
@@ -117,6 +118,13 @@ export class AdminController {
   @AllowedRoles(Roles.Admin)
   getAllBaristas(@Request() req) {
     return this.baristaService.findAll(req.user.id);
+  }
+
+  @Get('baristas/names')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
+  findAllWithSelecting(@Request() req) {
+    return this.baristaService.findAllWithSelecting(req.user.id);
   }
 
   @Get('baristas/:id')
@@ -373,6 +381,13 @@ export class AdminController {
   @AllowedRoles(Roles.Admin)
   getShiftsByPoint(@Param('pointID') pointID: number, @Request() req) {
     return this.shiftsService.getAllShiftsByPoint(pointID, req.user.id);
+  }
+
+  @Delete('shifts/:shiftID')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
+  deleteShiftByID(@Param('shiftID') shiftID: number, @Request() req) {
+    return this.shiftsService.deleteShiftByID(shiftID, req.user.id);
   }
 
   @Get('shifts/barista/:baristaID')
