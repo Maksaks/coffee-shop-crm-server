@@ -1,8 +1,8 @@
 import {
   Body,
   Controller,
-  Get,
   Param,
+  Post,
   Request,
   UseGuards,
   UsePipes,
@@ -19,7 +19,7 @@ import { StatisticsService } from './statistics.service';
 export class StatisticsController {
   constructor(private readonly statisticsService: StatisticsService) {}
 
-  @Get('positions/:pointID')
+  @Post('positions/:pointID')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @UsePipes(new ValidationPipe())
   @AllowedRoles(Roles.Admin)
@@ -36,7 +36,7 @@ export class StatisticsController {
     );
   }
 
-  @Get('points/:pointID')
+  @Post('points/:pointID')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @UsePipes(new ValidationPipe())
   @AllowedRoles(Roles.Admin)
@@ -53,7 +53,7 @@ export class StatisticsController {
     );
   }
 
-  @Get('points')
+  @Post('points')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @UsePipes(new ValidationPipe())
   @AllowedRoles(Roles.Admin)
@@ -68,7 +68,7 @@ export class StatisticsController {
     );
   }
 
-  @Get('baristas/:baristaID')
+  @Post('baristas/:baristaID')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @UsePipes(new ValidationPipe())
   @AllowedRoles(Roles.Admin)
@@ -85,7 +85,7 @@ export class StatisticsController {
     );
   }
 
-  @Get('baristas')
+  @Post('baristas')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @UsePipes(new ValidationPipe())
   @AllowedRoles(Roles.Admin)
@@ -100,7 +100,7 @@ export class StatisticsController {
     );
   }
 
-  @Get('ingredients/:pointID')
+  @Post('ingredients/:pointID')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @UsePipes(new ValidationPipe())
   @AllowedRoles(Roles.Admin)
@@ -117,7 +117,7 @@ export class StatisticsController {
     );
   }
 
-  @Get('categories')
+  @Post('categories')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @UsePipes(new ValidationPipe())
   @AllowedRoles(Roles.Admin)

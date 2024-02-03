@@ -211,6 +211,13 @@ export class AdminController {
     return this.pointService.getOnlyPointsInfo(req.user.id);
   }
 
+  @Get('points/names')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
+  getPointsIDAndName(@Request() req) {
+    return this.pointService.getPointsIDAndName(req.user.id);
+  }
+
   @Get('points/ingredients')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @AllowedRoles(Roles.Admin)

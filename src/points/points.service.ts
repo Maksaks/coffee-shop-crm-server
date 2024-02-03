@@ -61,6 +61,13 @@ export class PointsService {
     });
   }
 
+  async getPointsIDAndName(adminID: number) {
+    return await this.pointRepository.find({
+      where: { admin: { id: adminID } },
+      select: { id: true, name: true },
+    });
+  }
+
   async getOnlyPointsInfo(adminID: number) {
     const points = await this.pointRepository.find({
       where: { admin: { id: adminID } },

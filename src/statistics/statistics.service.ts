@@ -192,15 +192,7 @@ export class StatisticsService {
       },
       relations: { barista: true, point: true },
     });
-    const totalShifts = baristaShifts.map((shift) => {
-      return {
-        id: shift.id,
-        point_name: shift.point.name,
-        point_address: shift.point.address,
-        salary: shift.baristaSalary,
-        time: shift.time,
-      };
-    });
+    const shifts_count = baristaShifts.length;
     const totalSalary = baristaShifts.reduce((acc, cur) => {
       return acc + cur.baristaSalary;
     }, 0);
@@ -209,20 +201,22 @@ export class StatisticsService {
       barista_name: baristaShifts[0]
         ? baristaShifts[0].barista.surname + ' ' + baristaShifts[0].barista.name
         : 'Not found',
-      barista_email: baristaShifts[0] ? baristaShifts[0].barista.email : '',
+      barista_email: baristaShifts[0]
+        ? baristaShifts[0].barista.email
+        : 'Not found',
       barista_phone_number: baristaShifts[0]
         ? baristaShifts[0].barista.phoneNumber
-        : '',
+        : 'Not found',
       barista_date_of_employment: baristaShifts[0]
         ? baristaShifts[0].barista.dateOfEmployment
-        : '',
+        : 'Not found',
       barista_hour_rate: baristaShifts[0]
         ? baristaShifts[0].barista.fixedHourRate
-        : '',
+        : 'Not found',
       barista_percent: baristaShifts[0]
         ? baristaShifts[0].barista.percentFromEarnings
-        : '',
-      totalShifts,
+        : 'Not found',
+      shifts_count,
       totalSalary,
     };
   }
