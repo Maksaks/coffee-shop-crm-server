@@ -204,6 +204,20 @@ export class AdminController {
     return this.pointService.findAll(req.user.id);
   }
 
+  @Get('points/only')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
+  getOnlyPointsInfo(@Request() req) {
+    return this.pointService.getOnlyPointsInfo(req.user.id);
+  }
+
+  @Get('points/ingredients')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @AllowedRoles(Roles.Admin)
+  getPointsWithIngredients(@Request() req) {
+    return this.pointService.getPointsWithIngredients(req.user.id);
+  }
+
   @Get('points/short')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @AllowedRoles(Roles.Admin)

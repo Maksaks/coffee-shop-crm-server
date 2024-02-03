@@ -61,6 +61,37 @@ export class PointsService {
     });
   }
 
+  async getOnlyPointsInfo(adminID: number) {
+    const points = await this.pointRepository.find({
+      where: { admin: { id: adminID } },
+      relations: { barista: true, ingredients: true, menuPositions: true },
+    });
+    const outputPoints = [];
+    for (const point of points) {
+      const {
+        id,
+        name,
+        address,
+        description,
+        workingHours,
+        pointMoney,
+        ...other
+      } = point;
+      outputPoints.push({
+        id,
+        name,
+        address,
+        description,
+        workingHours,
+        pointMoney,
+        baristaCount: point.barista.length,
+        ingredientsCount: point.ingredients.length,
+        menuPositionsCount: point.menuPositions.length,
+      });
+    }
+    return outputPoints;
+  }
+
   async getPointsWithOrders(adminID: number) {
     return await this.pointRepository.find({
       where: { admin: { id: adminID } },
@@ -68,6 +99,16 @@ export class PointsService {
         orders: true,
       },
       select: { id: true, name: true, orders: true },
+    });
+  }
+
+  async getPointsWithIngredients(adminID: number) {
+    return await this.pointRepository.find({
+      where: { admin: { id: adminID } },
+      relations: {
+        orders: true,
+      },
+      select: { id: true, name: true, ingredients: true },
     });
   }
 
