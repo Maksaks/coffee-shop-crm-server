@@ -160,7 +160,7 @@ export class BaristaService {
     adminID: number,
   ) {
     const barista = await this.baristaRepository.findOne({
-      where: { id: baristaID, admin: { id: adminID }, points: { id: pointId } },
+      where: { id: baristaID, admin: { id: adminID } },
       relations: { points: true },
     });
     if (!barista) {
