@@ -133,6 +133,19 @@ export class IngredientsService {
     if (!existedIngredient) {
       throw new BadRequestException(`Ingredient with #${id} was not found`);
     }
+    if (updateIngredientDto.name) {
+      const existedIngredient = await this.ingredientRepository.findOne({
+        where: {
+          name: updateIngredientDto.name,
+          point: { admin: { id: adminID } },
+        },
+      });
+      if (existedIngredient) {
+        throw new BadRequestException(
+          `Ingredient with name ${updateIngredientDto.name} has already existed`,
+        );
+      }
+    }
     return await this.ingredientRepository.update(id, updateIngredientDto);
   }
 

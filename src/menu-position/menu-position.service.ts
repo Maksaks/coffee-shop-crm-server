@@ -158,6 +158,20 @@ export class MenuPositionService {
     if (!existedPosition) {
       throw new BadRequestException(`Menu Position with #${id} was not found`);
     }
+    if (updatedMenuPositionDto.name) {
+      const existedPosition = await this.menuPositionRepository.findOne({
+        where: {
+          name: updatedMenuPositionDto.name,
+          point: { id: pointID, admin: { id: adminID } },
+        },
+        relations: { recipe: true },
+      });
+      if (existedPosition) {
+        throw new BadRequestException(
+          `Menu Position with name ${updatedMenuPositionDto.name} has already existed`,
+        );
+      }
+    }
     if (
       !updatedMenuPositionDto.ingredients &&
       !updatedMenuPositionDto.stepsToReproduce

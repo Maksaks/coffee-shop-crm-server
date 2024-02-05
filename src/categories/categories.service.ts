@@ -65,6 +65,16 @@ export class CategoriesService {
     if (!category) {
       throw new NotFoundException(`Category with #${id} not found`);
     }
+    if (updateCategoryDto.title) {
+      const category = await this.categoryRepository.findOne({
+        where: { title: updateCategoryDto.title, admin: { id: adminID } },
+      });
+      if (category) {
+        throw new NotFoundException(
+          `Category with name ${updateCategoryDto.title} has already existed`,
+        );
+      }
+    }
     return await this.categoryRepository.update(id, updateCategoryDto);
   }
 

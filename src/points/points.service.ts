@@ -184,6 +184,16 @@ export class PointsService {
     if (!existedPoint) {
       throw new BadRequestException(`Point #${id} was not found`);
     }
+    if (updatePointDto.name) {
+      const existedPoint = await this.pointRepository.findOne({
+        where: { name: updatePointDto.name, admin: { id: adminID } },
+      });
+      if (existedPoint) {
+        throw new BadRequestException(
+          `Point with name ${updatePointDto.name} has already existed`,
+        );
+      }
+    }
     return await this.pointRepository.update(id, updatePointDto);
   }
 
