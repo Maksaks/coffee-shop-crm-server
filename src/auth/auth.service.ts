@@ -37,7 +37,7 @@ export class AuthService {
     const { id, name, email } = newAdmin as Admin;
 
     const token = await this.jwtService.signAsync({ id, name, email });
-    const confirmationURL = `${this.configService.get('CLIENT_URL')}/confirming/${token}`;
+    const confirmationURL = `${this.configService.get('CLIENT_URL')}/auth/confirming/${token}`;
     await this.mailerSenderService.sendConfirmMail(
       name,
       confirmationURL,
